@@ -1,14 +1,25 @@
 {
   "name": "@xingwangzhe/satteri-mermaid",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Satteri MDAST plugin for Mermaid diagram detection and transformation",
   "type": "module",
   "license": "MIT",
   "author": "xingwangzhe",
+  "homepage": "https://github.com/xingwangzhe/satteri-mermaid#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/xingwangzhe/satteri-mermaid"
   },
+  "keywords": [
+    "astro",
+    "astro-component",
+    "satteri",
+    "mermaid",
+    "mdast",
+    "markdown",
+    "diagram",
+    "plugin"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
