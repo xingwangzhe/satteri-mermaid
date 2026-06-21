@@ -1,0 +1,8 @@
+test/
+example/
+node_modules/
+.gitignore
+tsconfig.json
+vite.config.ts
+oxlintrc.json
+.oxlintignore

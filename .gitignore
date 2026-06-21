@@ -1,0 +1,8 @@
+node_modules/
+dist/
+coverage/
+.cache/
+.idea/
+.DS_Store
+.codegraph/
+.claude/
