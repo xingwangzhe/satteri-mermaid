@@ -1,2 +1,2 @@
-export { createMermaidPlugin, mermaidPlugin, popFlags } from "./plugin";
+export { createMermaidPlugin, mermaid, mermaidPlugin, popFlags } from "./plugin";
 export type { MermaidFlags, MermaidPluginOptions } from "./plugin";

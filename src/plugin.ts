@@ -90,7 +90,13 @@ export function createMermaidPlugin(options?: MermaidPluginOptions) {
   return { plugin, popFlags };
 }
 
+/** 工厂函数，返回 Satteri MDAST 插件。用法同 `katex()` */
+export function mermaid(options?: MermaidPluginOptions) {
+  return createMermaidPlugin(options).plugin;
+}
+
 const defaultInstance = createMermaidPlugin();
 
+/** @deprecated 使用 `mermaid` 替代 */
 export const mermaidPlugin = defaultInstance.plugin;
 export const popFlags = defaultInstance.popFlags;

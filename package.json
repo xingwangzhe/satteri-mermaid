@@ -1,6 +1,6 @@
 {
   "name": "@xingwangzhe/satteri-mermaid",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Satteri MDAST plugin for Mermaid diagram detection and transformation",
   "type": "module",
   "license": "MIT",

@@ -6,10 +6,10 @@
 
 ## Features
 
-- **Zero-config** — works out of the box with sensible defaults
-- **Configurable** — custom language aliases and rendering via `createMermaidPlugin`
+- **Zero-config** — `mermaid()` just works, consistent with `katex()` style
+- **Configurable** — custom language aliases and rendering via options
 - **Feature detection** — `popFlags()` tells you whether the page has diagrams, so you can lazy-load mermaid
-- **Isolated instances** — each plugin instance maintains independent state
+- **Isolated instances** — each `mermaid()` call returns an independent plugin instance
 - **TypeScript** — fully typed
 
 ## Install
@@ -24,69 +24,75 @@ Requires `satteri >= 0.8.0` and `mermaid >= 11.0.0` as peer dependencies.
 
 ### Default (works for most cases)
 
-```ts
-import { mermaidPlugin, popFlags } from "@xingwangzhe/satteri-mermaid";
-
-// In your Satteri / Astro config:
+```js
 // astro.config.mjs
-import { mermaidPlugin } from "@xingwangzhe/satteri-mermaid";
+import { mermaid } from "@xingwangzhe/satteri-mermaid";
 
 export default defineConfig({
   markdown: {
     processor: satteri({
-      mdastPlugins: [mermaidPlugin],
+      mdastPlugins: [katex(), mermaid()],
     }),
   },
 });
 ```
 
-The plugin detects ` ```mermaid ` code blocks and transforms them to `<pre class="mermaid">` HTML. After processing all pages, use `popFlags()` to check if the current page needs the mermaid runtime:
+The plugin detects ` ```mermaid ` code blocks and transforms them to `<pre class="mermaid">` HTML.
+
+### Custom (multiple language aliases, custom rendering)
+
+```js
+import { mermaid } from "@xingwangzhe/satteri-mermaid";
+
+mdastPlugins: [
+  katex(),
+  mermaid({
+    langs: ["mermaid", "mmd", "diagram"],
+    render: (code) => `<figure class="diagram"><pre class="mermaid">${code}</pre></figure>`,
+  }),
+],
+```
+
+### Advanced (with feature detection)
 
 ```ts
+import { createMermaidPlugin } from "@xingwangzhe/satteri-mermaid";
+
+const { plugin, popFlags } = createMermaidPlugin({ langs: ["mermaid"] });
+
+// After processing:
 const { hasMermaid } = popFlags();
-// Only load mermaid.js when needed
 if (hasMermaid) {
   await import("mermaid");
   mermaid.run({ querySelector: ".mermaid" });
 }
 ```
 
-### Custom (multiple language aliases, custom rendering)
-
-```ts
-import { createMermaidPlugin } from "@xingwangzhe/satteri-mermaid";
-
-const { plugin, popFlags } = createMermaidPlugin({
-  langs: ["mermaid", "mmd", "diagram"],
-  render: (code) => `<figure class="diagram"><pre class="mermaid">${code}</pre></figure>`,
-});
-```
-
 ## API
 
-### `mermaidPlugin`
+### `mermaid(options?)`
 
-Default plugin instance. Equivalent to `createMermaidPlugin()`.
+Factory function. Returns a Satteri MDAST plugin. Call it like `katex()`.
 
-### `popFlags(): MermaidFlags`
-
-Returns `{ hasMermaid: boolean }` and resets internal state. Call after processing to know if a page contains mermaid diagrams.
+| Option   | Type                                   | Default                                      | Description                     |
+| -------- | -------------------------------------- | -------------------------------------------- | ------------------------------- |
+| `langs`  | `string[]`                             | `["mermaid"]`                                | Code block language identifiers |
+| `render` | `(code: string, node: Code) => string` | `` (code) => `<pre class="mermaid">${code}</pre>` `` | Custom HTML output              |
 
 ### `createMermaidPlugin(options?)`
 
-| Option   | Type                                       | Default                                    | Description                         |
-| -------- | ------------------------------------------ | ------------------------------------------ | ----------------------------------- |
-| `langs`  | `string[]`                                 | `["mermaid"]`                              | Code block language identifiers     |
-| `render` | `(code: string, node: Code) => string`     | `` (code) => `<pre class="mermaid">${code}</pre>` `` | Custom HTML output |
+Returns `{ plugin, popFlags }`. Use this when you need access to `popFlags` for feature detection. Each call creates an isolated instance.
 
-Returns `{ plugin, popFlags }` — each instance has isolated state.
+### `popFlags(): MermaidFlags`
+
+Returns `{ hasMermaid: boolean }` and resets internal state.
 
 ## How It Works
 
 ```
 Markdown                    Build time                  Browser
 ─────────                   ──────────                  ───────
-```mermaid              mermaidPlugin detects       <pre class="mermaid">
+```mermaid              mermaid() detects           <pre class="mermaid">
 graph TD                   lang === "mermaid"            graph TD
   A --> B        ──►       returns rawHtml          ──►   A --> B
 ```                                                         </pre>

@@ -1,5 +1,39 @@
 import { describe, expect, it } from "vitest";
-import { createMermaidPlugin, mermaidPlugin, popFlags } from "../src/plugin";
+import { createMermaidPlugin, mermaid, mermaidPlugin, popFlags } from "../src/plugin";
+
+describe("mermaid() factory", () => {
+  it("returns a plugin without options", () => {
+    const plugin = mermaid();
+    expect(plugin.name).toBe("satteri-mermaid");
+    expect(typeof plugin.code).toBe("function");
+  });
+
+  it("returns rawHtml for mermaid code blocks", () => {
+    const plugin = mermaid();
+    const result = plugin.code!(
+      { type: "code", lang: "mermaid", value: "graph TD" } as any,
+      {} as any,
+    );
+    expect(result).toEqual({ rawHtml: '<pre class="mermaid">graph TD</pre>' });
+  });
+
+  it("supports custom options", () => {
+    const plugin = mermaid({
+      render: (code) => `<figure>${code}</figure>`,
+    });
+    const result = plugin.code!(
+      { type: "code", lang: "mermaid", value: "X" } as any,
+      {} as any,
+    );
+    expect(result).toEqual({ rawHtml: "<figure>X</figure>" });
+  });
+
+  it("supports custom langs", () => {
+    const plugin = mermaid({ langs: ["mmd"] });
+    expect(plugin.code!({ type: "code", lang: "mmd", value: "A" } as any, {} as any)).toBeDefined();
+    expect(plugin.code!({ type: "code", lang: "mermaid", value: "B" } as any, {} as any)).toBeUndefined();
+  });
+});
 
 describe("mermaidPlugin (default instance)", () => {
   it("has correct plugin name", () => {
