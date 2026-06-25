@@ -21,17 +21,16 @@ describe("mermaid() factory", () => {
     const plugin = mermaid({
       render: (code) => `<figure>${code}</figure>`,
     });
-    const result = plugin.code!(
-      { type: "code", lang: "mermaid", value: "X" } as any,
-      {} as any,
-    );
+    const result = plugin.code!({ type: "code", lang: "mermaid", value: "X" } as any, {} as any);
     expect(result).toEqual({ rawHtml: "<figure>X</figure>" });
   });
 
   it("supports custom langs", () => {
     const plugin = mermaid({ langs: ["mmd"] });
     expect(plugin.code!({ type: "code", lang: "mmd", value: "A" } as any, {} as any)).toBeDefined();
-    expect(plugin.code!({ type: "code", lang: "mermaid", value: "B" } as any, {} as any)).toBeUndefined();
+    expect(
+      plugin.code!({ type: "code", lang: "mermaid", value: "B" } as any, {} as any),
+    ).toBeUndefined();
   });
 });
 
@@ -64,52 +63,34 @@ describe("mermaidPlugin (default instance)", () => {
 
   it("sets hasMermaid flag for mermaid blocks", () => {
     mermaidPlugin.yaml!({ type: "yaml", value: "" } as any, {} as any);
-    mermaidPlugin.code!(
-      { type: "code", lang: "mermaid", value: "A" } as any,
-      {} as any,
-    );
+    mermaidPlugin.code!({ type: "code", lang: "mermaid", value: "A" } as any, {} as any);
     const flags = popFlags();
     expect(flags.hasMermaid).toBe(true);
   });
 
   it("does not set hasMermaid flag for non-mermaid blocks", () => {
     mermaidPlugin.yaml!({ type: "yaml", value: "" } as any, {} as any);
-    mermaidPlugin.code!(
-      { type: "code", lang: "python", value: "print(1)" } as any,
-      {} as any,
-    );
+    mermaidPlugin.code!({ type: "code", lang: "python", value: "print(1)" } as any, {} as any);
     const flags = popFlags();
     expect(flags.hasMermaid).toBe(false);
   });
 
   it("popFlags resets state after call", () => {
-    mermaidPlugin.code!(
-      { type: "code", lang: "mermaid", value: "A" } as any,
-      {} as any,
-    );
+    mermaidPlugin.code!({ type: "code", lang: "mermaid", value: "A" } as any, {} as any);
     expect(popFlags().hasMermaid).toBe(true);
     expect(popFlags().hasMermaid).toBe(false);
   });
 
   it("yaml resets internal state", () => {
-    mermaidPlugin.code!(
-      { type: "code", lang: "mermaid", value: "A" } as any,
-      {} as any,
-    );
+    mermaidPlugin.code!({ type: "code", lang: "mermaid", value: "A" } as any, {} as any);
     mermaidPlugin.yaml!({ type: "yaml", value: "title: test" } as any, {} as any);
     expect(popFlags().hasMermaid).toBe(false);
   });
 
   it("multiple mermaid blocks all set flag", () => {
     mermaidPlugin.yaml!({ type: "yaml", value: "" } as any, {} as any);
-    mermaidPlugin.code!(
-      { type: "code", lang: "mermaid", value: "first" } as any,
-      {} as any,
-    );
-    mermaidPlugin.code!(
-      { type: "code", lang: "mermaid", value: "second" } as any,
-      {} as any,
-    );
+    mermaidPlugin.code!({ type: "code", lang: "mermaid", value: "first" } as any, {} as any);
+    mermaidPlugin.code!({ type: "code", lang: "mermaid", value: "second" } as any, {} as any);
     expect(popFlags().hasMermaid).toBe(true);
   });
 });
@@ -120,10 +101,7 @@ describe("createMermaidPlugin (custom)", () => {
     expect(plugin.name).toBe("satteri-mermaid");
 
     plugin.yaml!({ type: "yaml", value: "" } as any, {} as any);
-    const result = plugin.code!(
-      { type: "code", lang: "mermaid", value: "test" } as any,
-      {} as any,
-    );
+    const result = plugin.code!({ type: "code", lang: "mermaid", value: "test" } as any, {} as any);
     expect(result).toEqual({ rawHtml: '<pre class="mermaid">test</pre>' });
     expect(pf().hasMermaid).toBe(true);
   });
@@ -132,17 +110,11 @@ describe("createMermaidPlugin (custom)", () => {
     const { plugin, popFlags: pf } = createMermaidPlugin({ langs: ["mmd", "diagram"] });
 
     plugin.yaml!({ type: "yaml", value: "" } as any, {} as any);
-    plugin.code!(
-      { type: "code", lang: "mmd", value: "A" } as any,
-      {} as any,
-    );
+    plugin.code!({ type: "code", lang: "mmd", value: "A" } as any, {} as any);
     expect(pf().hasMermaid).toBe(true);
 
     plugin.yaml!({ type: "yaml", value: "" } as any, {} as any);
-    plugin.code!(
-      { type: "code", lang: "mermaid", value: "B" } as any,
-      {} as any,
-    );
+    plugin.code!({ type: "code", lang: "mermaid", value: "B" } as any, {} as any);
     expect(pf().hasMermaid).toBe(false);
   });
 

@@ -74,9 +74,9 @@ if (hasMermaid) {
 
 Factory function. Returns a Satteri MDAST plugin. Call it like `katex()`.
 
-| Option   | Type                                   | Default                                      | Description                     |
-| -------- | -------------------------------------- | -------------------------------------------- | ------------------------------- |
-| `langs`  | `string[]`                             | `["mermaid"]`                                | Code block language identifiers |
+| Option   | Type                                   | Default                                              | Description                     |
+| -------- | -------------------------------------- | ---------------------------------------------------- | ------------------------------- |
+| `langs`  | `string[]`                             | `["mermaid"]`                                        | Code block language identifiers |
 | `render` | `(code: string, node: Code) => string` | `` (code) => `<pre class="mermaid">${code}</pre>` `` | Custom HTML output              |
 
 ### `createMermaidPlugin(options?)`
@@ -89,7 +89,7 @@ Returns `{ hasMermaid: boolean }` and resets internal state.
 
 ## How It Works
 
-```
+````
 Markdown                    Build time                  Browser
 ─────────                   ──────────                  ───────
 ```mermaid              mermaid() detects           <pre class="mermaid">
@@ -101,7 +101,7 @@ graph TD                   lang === "mermaid"            graph TD
                                                           │
                                                           ▼
                                                        SVG diagram
-```
+````
 
 ## Development
 

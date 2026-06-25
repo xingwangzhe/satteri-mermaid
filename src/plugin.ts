@@ -18,9 +18,7 @@ export interface MermaidPluginOptions {
  * in raw HTML (which would break mermaid diamond nodes `C{"text"}`).
  */
 function escapeCurlyBraces(code: string): string {
-  return code
-    .replace(/\{"/g, '&#123;"')
-    .replace(/"\}/g, '"&#125;');
+  return code.replace(/\{"/g, '&#123;"').replace(/"\}/g, '"&#125;');
 }
 
 function defaultRender(code: string): string {

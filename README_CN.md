@@ -74,10 +74,10 @@ if (hasMermaid) {
 
 工厂函数，返回 Satteri MDAST 插件。与 `katex()` 调用方式一致。
 
-| 参数     | 类型                                     | 默认值                                        | 说明               |
-| -------- | ---------------------------------------- | --------------------------------------------- | ------------------ |
-| `langs`  | `string[]`                               | `["mermaid"]`                                 | 匹配的代码块语言   |
-| `render` | `(code: string, node: Code) => string`   | `` (code) => `<pre class="mermaid">${code}</pre>` `` | 自定义 HTML 输出   |
+| 参数     | 类型                                   | 默认值                                               | 说明             |
+| -------- | -------------------------------------- | ---------------------------------------------------- | ---------------- |
+| `langs`  | `string[]`                             | `["mermaid"]`                                        | 匹配的代码块语言 |
+| `render` | `(code: string, node: Code) => string` | `` (code) => `<pre class="mermaid">${code}</pre>` `` | 自定义 HTML 输出 |
 
 ### `createMermaidPlugin(options?)`
 
@@ -89,7 +89,7 @@ if (hasMermaid) {
 
 ## 工作原理
 
-```
+````
 Markdown                    构建时                      浏览器
 ─────────                   ──────────                  ───────
 ```mermaid              mermaid() 检测             <pre class="mermaid">
@@ -101,7 +101,7 @@ graph TD                   lang === "mermaid"            graph TD
                                                           │
                                                           ▼
                                                        SVG 图表
-```
+````
 
 ## 开发
 

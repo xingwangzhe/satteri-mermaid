@@ -2,24 +2,30 @@
   "name": "@xingwangzhe/satteri-mermaid",
   "version": "0.1.4",
   "description": "Satteri MDAST plugin for Mermaid diagram detection and transformation",
-  "type": "module",
+  "keywords": [
+    "astro",
+    "astro-component",
+    "diagram",
+    "markdown",
+    "mdast",
+    "mermaid",
+    "plugin",
+    "satteri"
+  ],
+  "homepage": "https://github.com/xingwangzhe/satteri-mermaid#readme",
   "license": "MIT",
   "author": "xingwangzhe",
-  "homepage": "https://github.com/xingwangzhe/satteri-mermaid#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/xingwangzhe/satteri-mermaid"
   },
-  "keywords": [
-    "astro",
-    "astro-component",
-    "satteri",
-    "mermaid",
-    "mdast",
-    "markdown",
-    "diagram",
-    "plugin"
+  "files": [
+    "dist"
   ],
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -27,12 +33,6 @@
       "require": "./dist/index.cjs"
     }
   },
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
   "scripts": {
     "dev": "vite",
     "build": "vite build && tsc --emitDeclarationOnly --declarationDir dist",
@@ -44,10 +44,6 @@
     "lint:fix": "oxlint --fix src test",
     "prepublishOnly": "bun run build"
   },
-  "peerDependencies": {
-    "mermaid": ">=11.0.0",
-    "satteri": ">=0.8.0"
-  },
   "devDependencies": {
     "@types/node": "^24.0.0",
     "mermaid": "^11.15.0",
@@ -57,5 +53,9 @@
     "typescript": "^5.9.0",
     "vite": "^8.0.0",
     "vitest": "^4.1.0"
+  },
+  "peerDependencies": {
+    "mermaid": ">=11.0.0",
+    "satteri": ">=0.8.0"
   }
 }
