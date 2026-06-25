@@ -1,15 +1,14 @@
 # @xingwangzhe/satteri-mermaid
 
-[中文文档](README_CN.md) | [English](#)
-
-> Satteri MDAST plugin for Mermaid diagram detection and transformation
+> Sätteri MDAST + HAST plugin for Mermaid diagram detection and transformation.
 
 ## Features
 
-- **Zero-config** — `mermaid()` just works, consistent with `katex()` style
-- **Configurable** — custom language aliases and rendering via options
+- **Dual-plugin architecture** — MDAST plugin for detection, HAST plugin for safe rendering
+- **Immune to Sätteri text transforms** — mermaid code is inserted *after* Sätteri processing, so `{"` diamond nodes survive
+- **Zero-config** — `mermaidMdast()` + `mermaidHast()` just work
 - **Feature detection** — `popFlags()` tells you whether the page has diagrams, so you can lazy-load mermaid
-- **Isolated instances** — each `mermaid()` call returns an independent plugin instance
+- **Isolated instances** — each factory call returns an independent plugin instance
 - **TypeScript** — fully typed
 
 ## Install
@@ -22,43 +21,55 @@ Requires `satteri >= 0.8.0` and `mermaid >= 11.0.0` as peer dependencies.
 
 ## Usage
 
-### Default (works for most cases)
+### Recommended (MDAST + HAST, since v0.2.0)
 
 ```js
 // astro.config.mjs
-import { mermaid } from "@xingwangzhe/satteri-mermaid";
+import { mermaidMdast, mermaidHast } from "@xingwangzhe/satteri-mermaid";
 
 export default defineConfig({
   markdown: {
     processor: satteri({
-      mdastPlugins: [katex(), mermaid()],
+      mdastPlugins: [katex(), mermaidMdast()],
+      hastPlugins: [photoswipe(), mermaidHast()],
     }),
   },
 });
 ```
 
-The plugin detects ` ```mermaid ` code blocks and transforms them to `<pre class="mermaid">` HTML.
+### Why MDAST + HAST?
 
-### Custom (multiple language aliases, custom rendering)
+Sätteri applies text transformations (like converting `{"` to curly-quote equivalents) to **all raw HTML content** produced by MDAST plugins. This corrupts mermaid diamond-node syntax (`C{"label"}` → `C{'{'}"label"{'}'}`), causing browser-side "Syntax error".
 
-```js
-import { mermaid } from "@xingwangzhe/satteri-mermaid";
+The solution: the MDAST plugin only outputs an empty `<pre class="mermaid">` placeholder and stores the mermaid code in `ctx.data`. The HAST plugin runs **after** all Sätteri processing is complete, reads the code from `ctx.data`, and populates the `<pre>` element — safely bypassing any text transforms.
 
-mdastPlugins: [
-  katex(),
-  mermaid({
-    langs: ["mermaid", "mmd", "diagram"],
-    render: (code) => `<figure class="diagram"><pre class="mermaid">${code}</pre></figure>`,
-  }),
-],
+```
+Markdown           MDAST plugin            Sätteri processing       HAST plugin          Browser
+─────────          ─────────────           ──────────────────       ────────────          ───────
+```mermaid      store code in
+flowchart TD     ctx.data            (no {" to corrupt)
+  C{"test"}  ──► output empty        ──────────────────►  read code from   ──►  <pre class="mermaid">
+```               <pre placeholder>                         ctx.data              flowchart TD
+                                                                                  C{"test"}
+                                                                                </pre>
+                                                                                    │
+                                                                             mermaid.run()
+                                                                                    │
+                                                                                    ▼
+                                                                                 SVG diagram
 ```
 
 ### Advanced (with feature detection)
 
 ```ts
-import { createMermaidPlugin } from "@xingwangzhe/satteri-mermaid";
+import { createMermaidMdastPlugin, createMermaidHastPlugin } from "@xingwangzhe/satteri-mermaid";
 
-const { plugin, popFlags } = createMermaidPlugin({ langs: ["mermaid"] });
+const { plugin: mdastPlugin, popFlags } = createMermaidMdastPlugin({ langs: ["mermaid"] });
+const { plugin: hastPlugin } = createMermaidHastPlugin();
+
+// Register plugins:
+//   mdastPlugins: [mdastPlugin],
+//   hastPlugins:  [hastPlugin],
 
 // After processing:
 const { hasMermaid } = popFlags();
@@ -70,38 +81,62 @@ if (hasMermaid) {
 
 ## API
 
-### `mermaid(options?)`
+### `mermaidMdast(options?)`
 
-Factory function. Returns a Satteri MDAST plugin. Call it like `katex()`.
+Factory function. Returns a Sätteri **MDAST** plugin. Register in `mdastPlugins`.
 
-| Option   | Type                                   | Default                                              | Description                     |
-| -------- | -------------------------------------- | ---------------------------------------------------- | ------------------------------- |
-| `langs`  | `string[]`                             | `["mermaid"]`                                        | Code block language identifiers |
-| `render` | `(code: string, node: Code) => string` | `` (code) => `<pre class="mermaid">${code}</pre>` `` | Custom HTML output              |
+### `mermaidHast(options?)`
 
-### `createMermaidPlugin(options?)`
+Factory function. Returns a Sätteri **HAST** plugin. Register in `hastPlugins`.
 
-Returns `{ plugin, popFlags }`. Use this when you need access to `popFlags` for feature detection. Each call creates an isolated instance.
+### Shared Options
+
+| Option  | Type       | Default       | Description                     |
+| ------- | ---------- | ------------- | ------------------------------- |
+| `langs` | `string[]` | `["mermaid"]` | Code block language identifiers |
+
+### `createMermaidMdastPlugin(options?)`
+
+Returns `{ plugin, popFlags }`. Use this when you need `popFlags` for feature detection.
+
+### `createMermaidHastPlugin(options?)`
+
+Returns `{ plugin }`. Companion HAST plugin for the MDAST one above.
 
 ### `popFlags(): MermaidFlags`
 
 Returns `{ hasMermaid: boolean }` and resets internal state.
 
-## How It Works
+## Migration (v0.1.x → v0.2.0)
 
-````
-Markdown                    Build time                  Browser
-─────────                   ──────────                  ───────
-```mermaid              mermaid() detects           <pre class="mermaid">
-graph TD                   lang === "mermaid"            graph TD
-  A --> B        ──►       returns rawHtml          ──►   A --> B
-```                                                         </pre>
-                                                              │
-                                                    mermaid.run()
-                                                          │
-                                                          ▼
-                                                       SVG diagram
-````
+**Before:**
+
+```js
+import { mermaid } from "@xingwangzhe/satteri-mermaid";
+
+mdastPlugins: [katex(), mermaid()],
+```
+
+**After:**
+
+```js
+import { mermaidMdast, mermaidHast } from "@xingwangzhe/satteri-mermaid";
+
+mdastPlugins: [katex(), mermaidMdast()],
+hastPlugins: [photoswipe(), mermaidHast()],
+```
+
+If you use `createMermaidPlugin()` + `popFlags()`:
+
+```diff
+- import { createMermaidPlugin } from "@xingwangzhe/satteri-mermaid";
+- const { plugin, popFlags } = createMermaidPlugin();
++ import { createMermaidMdastPlugin, createMermaidHastPlugin } from "@xingwangzhe/satteri-mermaid";
++ const { plugin: mdastPlugin, popFlags } = createMermaidMdastPlugin();
++ const { plugin: hastPlugin } = createMermaidHastPlugin();
+```
+
+> **Note:** `mermaid()` and `mermaidPlugin` are still available as deprecated aliases. They only return the MDAST plugin and do **not** protect against Sätteri text transforms. Migrate to the dual-plugin approach for correct rendering.
 
 ## Development
 
