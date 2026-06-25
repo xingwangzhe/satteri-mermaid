@@ -70,16 +70,15 @@ if (hasMermaid) {
 ```mermaid
 flowchart LR
     subgraph MD["1. Markdown"]
-        SRC["` ```mermaid
-flowchart TD
-  C{&quot;测试&quot;} `"]
+        SRC["Markdown 中的
+mermaid 代码块"]
     end
 
     subgraph MDAST["2. MDAST 插件"]
         STORE["将代码存入
 ctx.data"]
         EMPTY["输出空的
-&lt;pre&gt; 占位符"]
+pre 占位符"]
     end
 
     subgraph SAT["3. Sätteri 处理"]
@@ -91,14 +90,12 @@ ctx.data"]
         READ["从 ctx.data
 读取代码"]
         FILL["将真实代码
-填入 &lt;pre&gt;"]
+填入 pre"]
     end
 
     subgraph BROWSER["5. 浏览器"]
-        HTML["&lt;pre class=&quot;mermaid&quot;&gt;
-flowchart TD
-  C{&quot;测试&quot;}
-&lt;/pre&gt;"]
+        HTML["pre.mermaid 元素
+含完整代码"]
         MM["mermaid.run()"]
         SVG["SVG 图表"]
     end

@@ -68,16 +68,15 @@ if (hasMermaid) {
 ```mermaid
 flowchart LR
     subgraph MD["1. Markdown"]
-        SRC["` ```mermaid
-flowchart TD
-  C{&quot;test&quot;} `"]
+        SRC["mermaid code block
+in Markdown source"]
     end
 
     subgraph MDAST["2. MDAST Plugin"]
         STORE["store code
 in ctx.data"]
         EMPTY["output empty
-&lt;pre&gt; placeholder"]
+pre placeholder"]
     end
 
     subgraph SAT["3. Sätteri"]
@@ -88,15 +87,13 @@ to corrupt"]
     subgraph HAST["4. HAST Plugin"]
         READ["read code
 from ctx.data"]
-        FILL["populate &lt;pre&gt;
+        FILL["populate pre
 with real code"]
     end
 
     subgraph BROWSER["5. Browser"]
-        HTML["&lt;pre class=&quot;mermaid&quot;&gt;
-flowchart TD
-  C{&quot;test&quot;}
-&lt;/pre&gt;"]
+        HTML["pre.mermaid element
+with clean code"]
         MM["mermaid.run()"]
         SVG["SVG diagram"]
     end
