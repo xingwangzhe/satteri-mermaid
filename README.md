@@ -66,29 +66,24 @@ if (hasMermaid) {
 ## How It Works
 
 ```mermaid
-flowchart LR
+flowchart TD
     subgraph MD["1. Markdown"]
         SRC["mermaid code block
 in Markdown source"]
     end
 
     subgraph MDAST["2. MDAST Plugin"]
-        STORE["store code
-in ctx.data"]
-        EMPTY["output empty
-pre placeholder"]
+        STORE["store code in ctx.data"]
+        EMPTY["output empty pre placeholder"]
     end
 
-    subgraph SAT["3. Sätteri"]
-        SAFE["no {&quot; pattern
-to corrupt"]
+    subgraph SAT["3. Sätteri Processing"]
+        SAFE["no {&quot; pattern to corrupt"]
     end
 
     subgraph HAST["4. HAST Plugin"]
-        READ["read code
-from ctx.data"]
-        FILL["populate pre
-with real code"]
+        READ["read code from ctx.data"]
+        FILL["populate pre with real code"]
     end
 
     subgraph BROWSER["5. Browser"]
@@ -98,9 +93,7 @@ with clean code"]
         SVG["SVG diagram"]
     end
 
-    SRC --> STORE --> EMPTY
-    EMPTY --> SAFE --> READ --> FILL
-    FILL --> HTML --> MM --> SVG
+    MD --> MDAST --> SAT --> HAST --> BROWSER
 ```
 
 ## API

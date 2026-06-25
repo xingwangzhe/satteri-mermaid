@@ -68,29 +68,24 @@ if (hasMermaid) {
 ## 工作原理
 
 ```mermaid
-flowchart LR
+flowchart TD
     subgraph MD["1. Markdown"]
         SRC["Markdown 中的
 mermaid 代码块"]
     end
 
     subgraph MDAST["2. MDAST 插件"]
-        STORE["将代码存入
-ctx.data"]
-        EMPTY["输出空的
-pre 占位符"]
+        STORE["将代码存入 ctx.data"]
+        EMPTY["输出空的 pre 占位符"]
     end
 
     subgraph SAT["3. Sätteri 处理"]
-        SAFE["没有 {&quot; 模式
-可被破坏"]
+        SAFE["没有 {&quot; 模式可被破坏"]
     end
 
     subgraph HAST["4. HAST 插件"]
-        READ["从 ctx.data
-读取代码"]
-        FILL["将真实代码
-填入 pre"]
+        READ["从 ctx.data 读取代码"]
+        FILL["将真实代码填入 pre"]
     end
 
     subgraph BROWSER["5. 浏览器"]
@@ -100,9 +95,7 @@ pre 占位符"]
         SVG["SVG 图表"]
     end
 
-    SRC --> STORE --> EMPTY
-    EMPTY --> SAFE --> READ --> FILL
-    FILL --> HTML --> MM --> SVG
+    MD --> MDAST --> SAT --> HAST --> BROWSER
 ```
 
 ## API
