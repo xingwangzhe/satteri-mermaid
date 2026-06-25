@@ -43,22 +43,7 @@ export default defineConfig({
 
 Sätteri 会对其产生的**所有 raw HTML 内容**应用文本转换（例如把 `{"` 转换为弯引号形式）。这会破坏 mermaid 菱形节点语法（`C{"标签"}` → `C{'{'}"标签"{'}'}`），导致浏览器端报 "Syntax error"。
 
-解决方案：MDAST 插件只输出一个空的 `<pre class="mermaid">` 占位符，并将 mermaid 代码存入 `ctx.data`。HAST 插件在**所有 Sätteri 处理完成之后**运行，从 `ctx.data` 读取代码并填入 `<pre>` 元素——安全绕过所有文本转换。
-
-```
-Markdown           MDAST 插件             Sätteri 处理            HAST 插件           浏览器
-─────────          ────────────           ────────────            ──────────           ───────
-```mermaid      将代码存入            (没有 {" 可破坏)        从 ctx.data 读代码
-flowchart TD     ctx.data                                                            <pre class="mermaid">
-  C{"测试"}  ──► 输出空的             ──────────────────►  填入 <pre>         ──►    flowchart TD
-```               <pre> 占位符                                                            C{"测试"}
-                                                                                      </pre>
-                                                                                         │
-                                                                                  mermaid.run()
-                                                                                         │
-                                                                                         ▼
-                                                                                      SVG 图表
-```
+解决方案：MDAST 插件只输出一个空的 `<pre class="mermaid">` 占位符，并将 mermaid 代码存入 `ctx.data`。HAST 插件在**所有 Sätteri 处理完成之后**运行，从 `ctx.data` 读取代码并填入 `<pre>` 元素——安全绕过所有文本转换。详见[工作原理](#工作原理)。
 
 ### 高级用法（配合特性检测）
 
@@ -78,6 +63,49 @@ if (hasMermaid) {
   await import("mermaid");
   mermaid.run({ querySelector: ".mermaid" });
 }
+```
+
+## 工作原理
+
+```mermaid
+flowchart LR
+    subgraph MD["1. Markdown"]
+        SRC["` ```mermaid
+flowchart TD
+  C{&quot;测试&quot;} `"]
+    end
+
+    subgraph MDAST["2. MDAST 插件"]
+        STORE["将代码存入
+ctx.data"]
+        EMPTY["输出空的
+&lt;pre&gt; 占位符"]
+    end
+
+    subgraph SAT["3. Sätteri 处理"]
+        SAFE["没有 {&quot; 模式
+可被破坏"]
+    end
+
+    subgraph HAST["4. HAST 插件"]
+        READ["从 ctx.data
+读取代码"]
+        FILL["将真实代码
+填入 &lt;pre&gt;"]
+    end
+
+    subgraph BROWSER["5. 浏览器"]
+        HTML["&lt;pre class=&quot;mermaid&quot;&gt;
+flowchart TD
+  C{&quot;测试&quot;}
+&lt;/pre&gt;"]
+        MM["mermaid.run()"]
+        SVG["SVG 图表"]
+    end
+
+    SRC --> STORE --> EMPTY
+    EMPTY --> SAFE --> READ --> FILL
+    FILL --> HTML --> MM --> SVG
 ```
 
 ## API

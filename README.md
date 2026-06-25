@@ -41,23 +41,7 @@ export default defineConfig({
 
 Sätteri applies text transformations (like converting `{"` to curly-quote equivalents) to **all raw HTML content** produced by MDAST plugins. This corrupts mermaid diamond-node syntax (`C{"label"}` → `C{'{'}"label"{'}'}`), causing browser-side "Syntax error".
 
-The solution: the MDAST plugin only outputs an empty `<pre class="mermaid">` placeholder and stores the mermaid code in `ctx.data`. The HAST plugin runs **after** all Sätteri processing is complete, reads the code from `ctx.data`, and populates the `<pre>` element — safely bypassing any text transforms.
-
-```
-Markdown           MDAST plugin            Sätteri processing       HAST plugin          Browser
-─────────          ─────────────           ──────────────────       ────────────          ───────
-```mermaid      store code in
-flowchart TD     ctx.data            (no {" to corrupt)
-  C{"test"}  ──► output empty        ──────────────────►  read code from   ──►  <pre class="mermaid">
-```               <pre placeholder>                         ctx.data              flowchart TD
-                                                                                  C{"test"}
-                                                                                </pre>
-                                                                                    │
-                                                                             mermaid.run()
-                                                                                    │
-                                                                                    ▼
-                                                                                 SVG diagram
-```
+The solution: the MDAST plugin only outputs an empty `<pre class="mermaid">` placeholder and stores the mermaid code in `ctx.data`. The HAST plugin runs **after** all Sätteri processing is complete, reads the code from `ctx.data`, and populates the `<pre>` element — safely bypassing any text transforms. See [How It Works](#how-it-works) for a visual overview.
 
 ### Advanced (with feature detection)
 
@@ -77,6 +61,49 @@ if (hasMermaid) {
   await import("mermaid");
   mermaid.run({ querySelector: ".mermaid" });
 }
+```
+
+## How It Works
+
+```mermaid
+flowchart LR
+    subgraph MD["1. Markdown"]
+        SRC["` ```mermaid
+flowchart TD
+  C{&quot;test&quot;} `"]
+    end
+
+    subgraph MDAST["2. MDAST Plugin"]
+        STORE["store code
+in ctx.data"]
+        EMPTY["output empty
+&lt;pre&gt; placeholder"]
+    end
+
+    subgraph SAT["3. Sätteri"]
+        SAFE["no {&quot; pattern
+to corrupt"]
+    end
+
+    subgraph HAST["4. HAST Plugin"]
+        READ["read code
+from ctx.data"]
+        FILL["populate &lt;pre&gt;
+with real code"]
+    end
+
+    subgraph BROWSER["5. Browser"]
+        HTML["&lt;pre class=&quot;mermaid&quot;&gt;
+flowchart TD
+  C{&quot;test&quot;}
+&lt;/pre&gt;"]
+        MM["mermaid.run()"]
+        SVG["SVG diagram"]
+    end
+
+    SRC --> STORE --> EMPTY
+    EMPTY --> SAFE --> READ --> FILL
+    FILL --> HTML --> MM --> SVG
 ```
 
 ## API
