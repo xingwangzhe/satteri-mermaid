@@ -12,8 +12,19 @@ export interface MermaidPluginOptions {
   render?: (code: string, node: Readonly<Code>) => string;
 }
 
+/**
+ * HTML-encode curly braces adjacent to quotes to prevent the
+ * Sätteri processor from transforming `{"` / `"}` patterns
+ * in raw HTML (which would break mermaid diamond nodes `C{"text"}`).
+ */
+function escapeCurlyBraces(code: string): string {
+  return code
+    .replace(/\{"/g, '&#123;"')
+    .replace(/"\}/g, '"&#125;');
+}
+
 function defaultRender(code: string): string {
-  return `<pre class="mermaid">${code}</pre>`;
+  return `<pre class="mermaid">${escapeCurlyBraces(code)}</pre>`;
 }
 
 export function createMermaidPlugin(options?: MermaidPluginOptions) {
