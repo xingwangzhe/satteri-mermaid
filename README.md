@@ -5,7 +5,7 @@
 ## Features
 
 - **Dual-plugin architecture** — MDAST plugin for detection, HAST plugin for safe rendering
-- **Immune to Sätteri text transforms** — mermaid code is inserted *after* Sätteri processing, so `{"` diamond nodes survive
+- **Immune to Sätteri text transforms** — mermaid code is inserted _after_ Sätteri processing, so `{"` diamond nodes survive
 - **Zero-config** — `mermaidMdast()` + `mermaidHast()` just work
 - **Feature detection** — `popFlags()` tells you whether the page has diagrams, so you can lazy-load mermaid
 - **Isolated instances** — each factory call returns an independent plugin instance
