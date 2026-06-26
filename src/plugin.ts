@@ -1,4 +1,3 @@
-import type { Code } from "mdast";
 import { defineMdastPlugin, defineHastPlugin } from "satteri";
 import type { HastVisitorContext, MdastPluginDefinition, HastPluginDefinition } from "satteri";
 
