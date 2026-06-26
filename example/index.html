@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>satteri-mermaid 示例</title>
+    <title>satteri-mermaid Example</title>
     <style>
       :root {
         --bg: #0d1117;
@@ -96,55 +96,59 @@
     </style>
   </head>
   <body>
-    <h1>satteri-mermaid 示例</h1>
+    <h1>satteri-mermaid Example</h1>
     <p>
-      <span class="badge">plugin</span> Satteri MDAST 插件：检测 Markdown 中的 mermaid 代码块，
-      将其转为 <code>&lt;pre class="mermaid"&gt;</code>，配合 mermaid 库在浏览器端渲染 SVG。
+      <span class="badge">plugin</span> Satteri MDAST plugin: detects mermaid code blocks in
+      Markdown, converts them to <code>&lt;pre class="mermaid"&gt;</code>, and renders SVG with
+      mermaid.js in the browser.
     </p>
 
-    <h2>静态示例（模拟插件输出）</h2>
-    <p>以下 <code>&lt;pre class="mermaid"&gt;</code> 元素是插件从 Markdown 生成的：</p>
+    <h2>Static Example (simulated plugin output)</h2>
+    <p>
+      The following <code>&lt;pre class="mermaid"&gt;</code> elements are generated from Markdown by
+      the plugin:
+    </p>
 
     <pre class="mermaid">
 flowchart LR
   A[Markdown] -->|satteri-mermaid| B[pre.mermaid]
-  B -->|mermaid.js| C[SVG 图表]
+  B -->|mermaid.js| C[SVG Diagram]
     </pre>
 
     <pre class="mermaid">
 sequenceDiagram
-  participant U as 用户
+  participant U as User
   participant S as Satteri
   participant M as Mermaid
-  U->>S: 写 ```mermaid 代码
-  S->>S: mermaidPlugin 检测并转换
-  S->>M: 浏览器中调用 mermaid.run()
-  M->>U: 渲染为 SVG
+  U->>S: Write ```mermaid code
+  S->>S: mermaidPlugin detects and transforms
+  S->>M: Browser calls mermaid.run()
+  M->>U: Renders as SVG
     </pre>
 
     <pre class="mermaid">
 gantt
-  title satteri-mermaid 开发计划
+  title satteri-mermaid Development Plan
   dateFormat  YYYY-MM-DD
-  section 核心
-  提取插件逻辑      :done, a1, 2026-06-21, 1d
-  编写测试          :active, a2, after a1, 1d
-  section 示例
-  静态示例页面      :b1, after a1, 1d
-  实时预览编辑器    :b2, after b1, 1d
+  section Core
+  Extract plugin logic      :done, a1, 2026-06-21, 1d
+  Write tests               :active, a2, after a1, 1d
+  section Examples
+  Static example page       :b1, after a1, 1d
+  Live preview editor       :b2, after b1, 1d
     </pre>
 
-    <h2>实时编辑器</h2>
-    <p>在下方输入 mermaid 代码，点击渲染：</p>
+    <h2>Live Editor</h2>
+    <p>Enter mermaid code below and click render:</p>
     <textarea id="editor">
-pie title 宠物偏好
-  "狗" : 42
-  "猫" : 35
-  "鸟" : 12
-  "鱼" : 8
-  "其他" : 3</textarea
+pie title Pet Preferences
+  "Dogs" : 42
+  "Cats" : 35
+  "Birds" : 12
+  "Fish" : 8
+  "Other" : 3</textarea
     >
-    <button id="render-btn">渲染</button>
+    <button id="render-btn">Render</button>
     <div id="live-preview"></div>
 
     <script type="module">
@@ -152,12 +156,12 @@ pie title 宠物偏好
 
       mermaid.initialize({ startOnLoad: false, theme: "dark" });
 
-      // 渲染页面上已有的 pre.mermaid 块
+      // Render existing pre.mermaid blocks on the page
       await mermaid.run({
         querySelector: ".mermaid",
       });
 
-      // 实时编辑器
+      // Live editor
       const editor = document.getElementById("editor");
       const preview = document.getElementById("live-preview");
       const btn = document.getElementById("render-btn");
