@@ -159,6 +159,7 @@ If you use `createMermaidPlugin()` + `popFlags()`:
 
 ```bash
 bun install
+bun run dev     # vite dev server → http://localhost:5173 (example page)
 bun run build   # vite build + tsc → dist/
 bun run test    # vitest
 bun run lint    # oxlint

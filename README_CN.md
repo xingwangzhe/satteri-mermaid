@@ -161,6 +161,7 @@ hastPlugins: [photoswipe(), mermaidHast()],
 
 ```bash
 bun install
+bun run dev     # vite 开发服务器 → http://localhost:5173（示例页面）
 bun run build   # vite build + tsc → dist/
 bun run test    # vitest
 bun run lint    # oxlint

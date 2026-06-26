@@ -1,7 +1,8 @@
 import { resolve } from "node:path";
 import { defineConfig } from "vite";
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
+  root: command === "serve" ? "example" : undefined,
   build: {
     lib: {
       entry: resolve(__dirname, "src/index.ts"),
@@ -12,4 +13,4 @@ export default defineConfig({
       external: ["satteri", "mermaid"],
     },
   },
-});
+}));
