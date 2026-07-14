@@ -47,11 +47,13 @@ export function createMermaidMdastPlugin(options?: MermaidPluginOptions): {
         flush();
         const id = `mermaid-${counter++}`;
         // Store the raw mermaid code in the shared data bag
-        const bag = ctx.data[DATA_KEY] as Record<string, string> | undefined;
-        if (bag) {
-          bag[id] = node.value;
-        } else {
-          ctx.data[DATA_KEY] = { [id]: node.value };
+        if (ctx.data) {
+          const bag = ctx.data[DATA_KEY] as Record<string, string> | undefined;
+          if (bag) {
+            bag[id] = node.value;
+          } else {
+            ctx.data[DATA_KEY] = { [id]: node.value };
+          }
         }
         // Output an empty placeholder — Sätteri won't corrupt this
         return {

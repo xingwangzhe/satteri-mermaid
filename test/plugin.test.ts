@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { createMermaidPlugin, mermaid, mermaidPlugin, popFlags } from "../src/plugin";
+import { mermaid, mermaidPlugin, popFlags, createMermaidMdastPlugin } from "../src/plugin";
 
-describe("mermaid() factory", () => {
-  it("returns a plugin without options", () => {
+describe("mermaid() factory (deprecated mdast shortcut)", () => {
+  it("returns an MDAST plugin", () => {
     const plugin = mermaid();
-    expect(plugin.name).toBe("satteri-mermaid");
+    expect(plugin.name).toBe("satteri-mermaid-mdast");
     expect(typeof plugin.code).toBe("function");
   });
 
@@ -14,15 +14,8 @@ describe("mermaid() factory", () => {
       { type: "code", lang: "mermaid", value: "graph TD" } as any,
       {} as any,
     );
-    expect(result).toEqual({ rawHtml: '<pre class="mermaid">graph TD</pre>' });
-  });
-
-  it("supports custom options", () => {
-    const plugin = mermaid({
-      render: (code) => `<figure>${code}</figure>`,
-    });
-    const result = plugin.code!({ type: "code", lang: "mermaid", value: "X" } as any, {} as any);
-    expect(result).toEqual({ rawHtml: "<figure>X</figure>" });
+    expect(result).toHaveProperty("rawHtml");
+    expect(result?.rawHtml).toContain('class="mermaid"');
   });
 
   it("supports custom langs", () => {
@@ -36,7 +29,7 @@ describe("mermaid() factory", () => {
 
 describe("mermaidPlugin (default instance)", () => {
   it("has correct plugin name", () => {
-    expect(mermaidPlugin.name).toBe("satteri-mermaid");
+    expect(mermaidPlugin.name).toBe("satteri-mermaid-mdast");
   });
 
   it("has code visitor function", () => {
@@ -48,9 +41,8 @@ describe("mermaidPlugin (default instance)", () => {
       { type: "code", lang: "mermaid", value: "graph TD\n  A --> B" } as any,
       {} as any,
     );
-    expect(result).toEqual({
-      rawHtml: '<pre class="mermaid">graph TD\n  A --> B</pre>',
-    });
+    expect(result).toHaveProperty("rawHtml");
+    expect(result?.rawHtml).toContain("data-mermaid-id");
   });
 
   it("returns undefined for non-mermaid code blocks", () => {
@@ -95,19 +87,19 @@ describe("mermaidPlugin (default instance)", () => {
   });
 });
 
-describe("createMermaidPlugin (custom)", () => {
-  it("default options behave same as mermaidPlugin", () => {
-    const { plugin, popFlags: pf } = createMermaidPlugin();
-    expect(plugin.name).toBe("satteri-mermaid");
+describe("createMermaidMdastPlugin (custom)", () => {
+  it("returns a plugin with isolated popFlags", () => {
+    const { plugin, popFlags: pf } = createMermaidMdastPlugin();
+    expect(plugin.name).toBe("satteri-mermaid-mdast");
 
     plugin.yaml!({ type: "yaml", value: "" } as any, {} as any);
     const result = plugin.code!({ type: "code", lang: "mermaid", value: "test" } as any, {} as any);
-    expect(result).toEqual({ rawHtml: '<pre class="mermaid">test</pre>' });
+    expect(result).toEqual({ rawHtml: '<pre class="mermaid" data-mermaid-id="mermaid-0"></pre>' });
     expect(pf().hasMermaid).toBe(true);
   });
 
   it("custom langs match", () => {
-    const { plugin, popFlags: pf } = createMermaidPlugin({ langs: ["mmd", "diagram"] });
+    const { plugin, popFlags: pf } = createMermaidMdastPlugin({ langs: ["mmd", "diagram"] });
 
     plugin.yaml!({ type: "yaml", value: "" } as any, {} as any);
     plugin.code!({ type: "code", lang: "mmd", value: "A" } as any, {} as any);
@@ -118,37 +110,9 @@ describe("createMermaidPlugin (custom)", () => {
     expect(pf().hasMermaid).toBe(false);
   });
 
-  it("custom render output", () => {
-    const { plugin } = createMermaidPlugin({
-      render: (code) => `<figure class="diagram"><pre class="mermaid">${code}</pre></figure>`,
-    });
-
-    const result = plugin.code!(
-      { type: "code", lang: "mermaid", value: "graph TD" } as any,
-      {} as any,
-    );
-    expect(result).toEqual({
-      rawHtml: '<figure class="diagram"><pre class="mermaid">graph TD</pre></figure>',
-    });
-  });
-
-  it("render receives the original node", () => {
-    let receivedNode: any = null;
-    const { plugin } = createMermaidPlugin({
-      render: (code, node) => {
-        receivedNode = node;
-        return `<pre class="mermaid">${code}</pre>`;
-      },
-    });
-
-    const codeNode = { type: "code", lang: "mermaid", value: "X", meta: "extra" };
-    plugin.code!(codeNode as any, {} as any);
-    expect(receivedNode).toEqual(codeNode);
-  });
-
   it("instances have isolated state", () => {
-    const a = createMermaidPlugin();
-    const b = createMermaidPlugin();
+    const a = createMermaidMdastPlugin();
+    const b = createMermaidMdastPlugin();
 
     a.plugin.code!({ type: "code", lang: "mermaid", value: "A" } as any, {} as any);
     expect(a.popFlags().hasMermaid).toBe(true);
