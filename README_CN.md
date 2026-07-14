@@ -16,7 +16,7 @@
 ## 安装
 
 ```bash
-bun add @xingwangzhe/satteri-mermaid
+bun add -D @xingwangzhe/satteri-mermaid
 ```
 
 需要 `satteri >= 0.8.0` 和 `mermaid >= 11.0.0` 作为 peer dependencies。
