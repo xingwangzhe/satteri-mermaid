@@ -1,16 +1,16 @@
 # @xingwangzhe/satteri-mermaid
 
-> Sätteri MDAST + HAST plugin for Mermaid diagram detection and transformation.
-> **v0.3.0: SSG SVG rendering — zero client JS.**
+> Sätteri MDAST + HAST plugin for Mermaid diagram detection and SSG SVG rendering.
+> **v0.3.2: zero client JS — diagrams rendered at build time.**
 
 ## Features
 
-- **SSG SVG rendering** — `ssg: true` (default) renders diagrams as static SVG at build time via [`beautiful-mermaid`](https://github.com/lukilabs/beautiful-mermaid). **No client-side `mermaid.js` needed.**
-- **Theme-adaptive** — default SVG colors use CSS variables (`var(--card-bg)`, `var(--muted-text)`), follow your site's light/dark theme automatically.
-- **Dual-plugin architecture** — MDAST plugin for detection, HAST plugin for safe rendering
-- **Immune to Sätteri text transforms** — mermaid code is stored in `ctx.data` and inserted _after_ Sätteri processing
-- **Feature detection** — `popFlags()` tells you whether the page has diagrams
-- **TypeScript** — fully typed
+- **SSG SVG rendering** — `ssg: true` (default) renders diagrams as static inline SVG at build time via [`beautiful-mermaid`](https://github.com/lukilabs/beautiful-mermaid). No client-side `mermaid.js` required.
+- **Theme-adaptive** — default colors use CSS variables (`var(--card-bg)`, `var(--muted-text)`). Pass your own variables for automatic light/dark mode switching.
+- **Auto-responsive** — `responsive: true` (default) removes fixed SVG dimensions and adds `width:100%`. Zero extra CSS.
+- **Dual-plugin architecture** — MDAST plugin detects code blocks, HAST plugin renders or restores them. Immune to Sätteri text transforms.
+- **Feature detection** — `popFlags()` returns `{ hasMermaid: boolean }` per document.
+- **TypeScript** — fully typed with exported interfaces.
 
 ## Install
 
@@ -18,7 +18,7 @@
 bun add -D @xingwangzhe/satteri-mermaid beautiful-mermaid
 ```
 
-Peer dependencies: `satteri >= 0.8.0`. `mermaid` is **no longer required** when using `ssg: true`.
+Requires `satteri >= 0.8.0`. `mermaid` is **not needed** when using `ssg: true`.
 
 ## Usage
 
@@ -37,74 +37,113 @@ export default defineConfig({
       hastPlugins: [
         photoswipe(),
         mermaidHast({
-          ssg: true,                                // 默认 true — 构建时静态 SVG
-          responsive: true,                         // 默认 true — 自适应宽度
+          ssg: true,               // default: true — build-time static SVG
+          responsive: true,        // default: true — auto width:100%
           svgOptions: {
-            bg: "var(--card-bg, #1a1b26)",          // CSS 变量跟随主题
-            fg: "var(--muted-text, #a9b1d6)",
-            font: "inherit",                         // 可选：字体
-            padding: 40,                             // 可选：画布内边距
+            bg: "var(--card-bg, #1a1b26)",     // CSS variable with fallback
+            fg: "var(--muted-text, #a9b1d6)",  // CSS variable with fallback
+            line: "var(--accent, #58a6ff)",     // optional — edge/connector color
+            accent: "var(--accent, #58a6ff)",   // optional — arrows, highlights
+            muted: "var(--muted, #8b949e)",     // optional — edge labels, secondary text
+            surface: "var(--surface, #0d1117)", // optional — node fill
+            border: "var(--border, #30363d)",   // optional — node/group borders
+            font: "inherit",                    // optional — font family
+            padding: 40,                        // default: 40 — canvas padding (px)
+            nodeSpacing: 24,                    // default: 24 — horizontal gap (px)
+            layerSpacing: 40,                   // default: 40 — vertical gap (px)
           },
         }),
-        // 如果不需要 SSG，传统客户端渲染：
-        // mermaidHast({ ssg: false }),
+        // Legacy client-side: mermaidHast({ ssg: false })
       ],
     }),
   },
 });
 ```
 
-The `responsive: true` (default) automatically adds responsive width — no extra CSS needed.Legacy client-side rendering: `mermaidHast({ ssg: false })` — outputs `<pre class="mermaid">code</pre>` for browser-side `mermaid.run()`.
-
 ## Options
+
+### `MermaidPluginOptions`
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `ssg` | `boolean` | `true` | Build-time SVG rendering |
+| `responsive` | `boolean` | `true` | Auto `width:100%;display:block` on SVG, `max-width:100%;overflow:hidden` on wrapper |
+| `langs` | `string[]` | `["mermaid"]` | Code block language identifiers to match |
+
+### `svgOptions` — Colors
+
+All color values accept CSS variables (e.g. `var(--card-bg)`) with an optional fallback after comma.
 
 | Option | Default | Controls |
 |--------|---------|----------|
-| `ssg` | `true` | `true` = build-time SVG, `false` = client-side `mermaid.run()` |
-| `responsive` | `true` | 自动添加 `max-width:100%;height:auto`，无需手写 CSS |
-| `langs` | `["mermaid"]` | Code block language identifiers to match |
-
-### `svgOptions` — diagram colors
-
-All color values accept CSS variables (e.g. `var(--card-bg)`) with a fallback hex after comma.
-
-| Option | Default | Visual element |
-|--------|---------|----------------|
 | `bg` | `var(--card-bg, #1a1b26)` | Canvas background |
 | `fg` | `var(--muted-text, #a9b1d6)` | Node labels, primary text |
 | `line` | — | Edge lines / connectors |
-| `accent` | — | Arrow heads, highlight nodes |
+| `accent` | — | Arrow heads, highlighted nodes |
 | `muted` | — | Edge labels, secondary text |
-| `surface` | — | Node fill / box background |
-| `border` | — | Node & group borders |
+| `surface` | — | Node fill / box interior |
+| `border` | — | Node and group borders |
 
-### `svgOptions` — layout
+### `svgOptions` — Layout
 
-| Option | Default | Controls |
-|--------|---------|----------|
-| `font` | — | Font family (e.g. `"inherit"`) |
-| `padding` | `40` | Canvas padding (px) |
-| `nodeSpacing` | `24` | Horizontal spacing between nodes (px) |
-| `layerSpacing` | `40` | Vertical spacing between layers (px) |
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `font` | `string` | — | Font family (e.g. `"inherit"`) |
+| `padding` | `number` | `40` | Canvas padding (px) |
+| `nodeSpacing` | `number` | `24` | Horizontal spacing between nodes (px) |
+| `layerSpacing` | `number` | `40` | Vertical spacing between layers (px) |
 
 ## How It Works
 
+```mermaid
+flowchart LR
+  A[Markdown code block] --> B[MDAST Plugin]
+  B --> C["Store code in ctx.data<br>Output empty &lt;pre&gt; placeholder"]
+  C --> D["Sätteri processing<br>(placeholder untouched)"]
+  D --> E{ssg?}
+  E -->|true| F["HAST Plugin<br>renderMermaidSVG()<br>&rarr; Inline SVG"]
+  E -->|false| G["HAST Plugin<br>Restore &lt;pre class=mermaid&gt;<br>for client-side mermaid.run()"]
 ```
-MDAST: code block → store in ctx.data → output empty placeholder
-                       ↓
-Sätteri processing (placeholder untouched)
-                       ↓
-HAST (ssg: true):  read code → renderMermaidSVG() → replace with <div class="mermaid"><svg>...</svg></div>
-HAST (ssg: false): read code → restore <pre class="mermaid"> for client-side mermaid.run()
+
+## API
+
+### Factory Functions
+
+| Function | Returns | Register in |
+|----------|---------|-------------|
+| `mermaidMdast(options?)` | `MdastPluginDefinition` | `mdastPlugins` |
+| `mermaidHast(options?)` | `HastPluginDefinition` | `hastPlugins` |
+| `createMermaidMdastPlugin(options?)` | `{ plugin, popFlags }` | `mdastPlugins` + detection |
+| `createMermaidHastPlugin(options?)` | `{ plugin }` | `hastPlugins` |
+
+### Feature Detection
+
+```ts
+import { createMermaidMdastPlugin, createMermaidHastPlugin } from "@xingwangzhe/satteri-mermaid";
+
+const { plugin: mdast, popFlags } = createMermaidMdastPlugin();
+const { plugin: hast } = createMermaidHastPlugin({ ssg: true });
+
+// After processing:
+const { hasMermaid } = popFlags(); // { hasMermaid: boolean }
 ```
 
-## Migration (v0.2.x → v0.3.0)
+### Deprecated (v0.1.x compatibility)
 
-**If you were using client-side mermaid:**
+| Export | Replacement |
+|--------|-------------|
+| `mermaid()` | `mermaidMdast()` |
+| `mermaidPlugin` | `mermaidMdast()` |
+| `popFlags` (global) | `createMermaidMdastPlugin().popFlags` |
+| `createMermaidPlugin()` | `createMermaidMdastPlugin()` |
 
-1. Update to `v0.3.0` — `ssg: true` is the default.
+## Migration
 
-2. From your Astro component, **remove** the client-side mermaid script:
+### v0.2.x → v0.3.0
+
+1. Update to `>= 0.3.0`. Install `beautiful-mermaid` as a dependency.
+
+2. **Remove** client-side mermaid script from your Astro component:
 ```diff
 - {props.hasMermaid && (
 -   <script>
@@ -117,29 +156,18 @@ HAST (ssg: false): read code → restore <pre class="mermaid"> for client-side m
 - )}
 ```
 
-3. That's it — diagrams now render at build time with responsive width built-in, zero client JS.
+3. Remove `mermaid` from `package.json` if no longer used elsewhere.
 
-## API
+4. Diagrams now render at build time with auto-responsive width — zero client JS, zero extra CSS.
 
-### `mermaidMdast(options?)`
+## Example
 
-Factory. Returns MDAST plugin for `mdastPlugins`.
-
-### `mermaidHast(options?)`
-
-Factory. Returns HAST plugin for `hastPlugins`. `ssg: true` by default.
-
-### `createMermaidMdastPlugin(options?)`
-
-Returns `{ plugin, popFlags }`. Use when you need `popFlags()`.
-
-### `createMermaidHastPlugin(options?)`
-
-Returns `{ plugin }`.
-
-### `popFlags(): MermaidFlags`
-
-Returns `{ hasMermaid: boolean }` and resets internal state.
+```bash
+git clone https://github.com/xingwangzhe/satteri-mermaid.git
+cd satteri-mermaid/example
+bun install
+bun run build   # → dist/index.html with inline SVGs
+```
 
 ## License
 

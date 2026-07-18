@@ -1,6 +1,6 @@
 {
   "name": "@xingwangzhe/satteri-mermaid",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Satteri MDAST plugin for Mermaid diagram detection and transformation",
   "keywords": [
     "astro",

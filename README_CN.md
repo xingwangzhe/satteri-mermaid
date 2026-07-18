@@ -2,17 +2,17 @@
 
 [English](README.md) | 中文文档
 
-> Sätteri MDAST + HAST 双插件，用于检测和渲染 Mermaid 图表。
-> **v0.3.0: 支持构建时 SSG 静态 SVG 渲染，零客户端 JS。**
+> Sätteri MDAST + HAST 双插件：检测 Mermaid 图表并以 SSG 方式渲染为静态 SVG。
+> **v0.3.2: 零客户端 JS — 构建时渲染图表。**
 
 ## 特性
 
-- **SSG SVG 渲染** — `ssg: true`（默认）通过 [`beautiful-mermaid`](https://github.com/lukilabs/beautiful-mermaid) 在构建时将图表渲染为静态 SVG。**无需客户端 `mermaid.js`。**
-- **自适应明暗主题** — 默认 SVG 颜色使用 CSS 变量（`var(--card-bg)`、`var(--muted-text)`），自动跟随站点主题切换。
-- **双插件架构** — MDAST 插件负责检测，HAST 插件负责安全渲染
-- **免疫 Sätteri 文本变换** — mermaid 代码存储在 `ctx.data` 中，在 Sätteri 处理后插入，避免 `{"` 被破坏
-- **特性检测** — `popFlags()` 可查询当前页面是否包含图表
-- **TypeScript** — 完整类型定义
+- **SSG SVG 渲染** — `ssg: true`（默认）通过 [`beautiful-mermaid`](https://github.com/lukilabs/beautiful-mermaid) 在构建时将图表渲染为静态内联 SVG。**无需客户端 `mermaid.js`。**
+- **自适应主题** — 默认颜色使用 CSS 变量（`var(--card-bg)`、`var(--muted-text)`），传入自己的变量即可自动跟随明暗主题切换。
+- **自动响应式** — `responsive: true`（默认）自动移除 SVG 固定宽高并添加 `width:100%`，无需手写 CSS。
+- **双插件架构** — MDAST 插件检测代码块，HAST 插件渲染或还原。免疫 Sätteri 文本变换，`{"` 节点不会被破坏。
+- **特性检测** — `popFlags()` 返回 `{ hasMermaid: boolean }`，可按文档判断是否包含图表。
+- **TypeScript** — 完整类型定义，导出 `MermaidPluginOptions` 和 `MermaidFlags` 接口。
 
 ## 安装
 
@@ -20,7 +20,7 @@
 bun add -D @xingwangzhe/satteri-mermaid beautiful-mermaid
 ```
 
-Peer dependencies: `satteri >= 0.8.0`。使用 `ssg: true` 时**不再需要** `mermaid`。
+依赖 `satteri >= 0.8.0`。使用 `ssg: true` 时**不需要**安装 `mermaid`。
 
 ## 使用
 
@@ -39,38 +39,42 @@ export default defineConfig({
       hastPlugins: [
         photoswipe(),
         mermaidHast({
-          ssg: true,                                // 默认 true — 构建时静态 SVG
-          responsive: true,                         // 默认 true — 自适应宽度
+          ssg: true,               // 默认 true — 构建时静态 SVG
+          responsive: true,        // 默认 true — 自动 width:100%
           svgOptions: {
-            bg: "var(--card-bg, #1a1b26)",          // CSS 变量跟随主题
-            fg: "var(--muted-text, #a9b1d6)",
-            font: "inherit",                         // 可选：字体
-            padding: 40,                             // 可选：画布内边距
+            bg: "var(--card-bg, #1a1b26)",     // CSS 变量 + 回退值
+            fg: "var(--muted-text, #a9b1d6)",  // CSS 变量 + 回退值
+            line: "var(--accent, #58a6ff)",     // 可选 — 连线/连接器颜色
+            accent: "var(--accent, #58a6ff)",   // 可选 — 箭头、高亮节点
+            muted: "var(--muted, #8b949e)",     // 可选 — 边标签、次要文字
+            surface: "var(--surface, #0d1117)", // 可选 — 节点填充
+            border: "var(--border, #30363d)",   // 可选 — 节点/分组边框
+            font: "inherit",                    // 可选 — 字体
+            padding: 40,                        // 默认 40 — 画布内边距(px)
+            nodeSpacing: 24,                    // 默认 24 — 水平间距(px)
+            layerSpacing: 40,                   // 默认 40 — 垂直间距(px)
           },
         }),
-        // 如果不需要 SSG，传统客户端渲染：
-        // mermaidHast({ ssg: false }),
+        // 传统客户端渲染: mermaidHast({ ssg: false })
       ],
     }),
   },
 });
 ```
 
-`responsive: true`（默认）自动添加自适应宽度——无需额外 CSS。
-
-传统客户端渲染：`mermaidHast({ ssg: false })` — 输出 `<pre class="mermaid">code</pre>` 供浏览器端 `mermaid.run()`。
-
 ## 选项
 
-| 选项 | 默认值 | 说明 |
-|--------|---------|------|
-| `ssg` | `true` | `true` = 构建时静态 SVG，`false` = 客户端 `mermaid.run()` |
-| `responsive` | `true` | 自动添加 `width:100%`，无需手写 CSS |
-| `langs` | `["mermaid"]` | 要匹配的代码块语言标识符 |
+### `MermaidPluginOptions`
+
+| 选项 | 类型 | 默认值 | 说明 |
+|--------|------|---------|------|
+| `ssg` | `boolean` | `true` | 构建时 SVG 渲染 |
+| `responsive` | `boolean` | `true` | SVG 自动 `width:100%;display:block`，外层 `max-width:100%;overflow:hidden` |
+| `langs` | `string[]` | `["mermaid"]` | 要匹配的代码块语言标识符 |
 
 ### `svgOptions` — 图表配色
 
-所有颜色值支持 CSS 变量（如 `var(--card-bg)`），逗号后为回退色值。
+所有颜色值均支持 CSS 变量（如 `var(--card-bg)`），逗号后为变量未定义时的回退色值。
 
 | 选项 | 默认值 | 控制元素 |
 |--------|---------|----------|
@@ -79,45 +83,69 @@ export default defineConfig({
 | `line` | — | 连线 / 连接器 |
 | `accent` | — | 箭头、高亮节点 |
 | `muted` | — | 边标签、次要文字 |
-| `surface` | — | 节点填充 / 盒背景 |
+| `surface` | — | 节点填充 / 盒内部 |
 | `border` | — | 节点和分组边框 |
 
 ### `svgOptions` — 布局
 
-| 选项 | 默认值 | 说明 |
-|--------|---------|------|
-| `font` | — | 字体（如 `"inherit"`） |
-| `padding` | `40` | 画布内边距（px） |
-| `nodeSpacing` | `24` | 节点水平间距（px） |
-| `layerSpacing` | `40` | 层级垂直间距（px） |
-
-### `svgOptions` — 布局
-
-| 选项 | 默认值 | 说明 |
-|--------|---------|------|
-| `font` | — | 字体（如 `"inherit"`） |
-| `padding` | `40` | 画布内边距（px） |
-| `nodeSpacing` | `24` | 节点水平间距（px） |
-| `layerSpacing` | `40` | 层级垂直间距（px） |
+| 选项 | 类型 | 默认值 | 说明 |
+|--------|------|---------|------|
+| `font` | `string` | — | 字体（如 `"inherit"`） |
+| `padding` | `number` | `40` | 画布内边距（px） |
+| `nodeSpacing` | `number` | `24` | 节点水平间距（px） |
+| `layerSpacing` | `number` | `40` | 层级垂直间距（px） |
 
 ## 工作原理
 
+```mermaid
+flowchart LR
+  A[Markdown 代码块] --> B[MDAST 插件]
+  B --> C["代码存入 ctx.data<br>输出空 &lt;pre&gt; 占位符"]
+  C --> D["Sätteri 处理<br>（占位符不会被破坏）"]
+  D --> E{ssg?}
+  E -->|true| F["HAST 插件<br>renderMermaidSVG()<br>&rarr; 内联 SVG"]
+  E -->|false| G["HAST 插件<br>还原 &lt;pre class=mermaid&gt;<br>供客户端 mermaid.run()"]
 ```
-MDAST: 代码块 → 存入 ctx.data → 输出空占位符
-                       ↓
-Sätteri 处理（占位符不会被修改）
-                       ↓
-HAST (ssg: true):  读取代码 → renderMermaidSVG() → 替换为 <div class="mermaid"><svg>...</svg></div>
-HAST (ssg: false): 读取代码 → 还原为 <pre class="mermaid"> 供客户端 mermaid.run()
+
+## API
+
+### 工厂函数
+
+| 函数 | 返回值 | 注册到 |
+|----------|---------|-------------|
+| `mermaidMdast(options?)` | `MdastPluginDefinition` | `mdastPlugins` |
+| `mermaidHast(options?)` | `HastPluginDefinition` | `hastPlugins` |
+| `createMermaidMdastPlugin(options?)` | `{ plugin, popFlags }` | `mdastPlugins` + 检测 |
+| `createMermaidHastPlugin(options?)` | `{ plugin }` | `hastPlugins` |
+
+### 特性检测
+
+```ts
+import { createMermaidMdastPlugin, createMermaidHastPlugin } from "@xingwangzhe/satteri-mermaid";
+
+const { plugin: mdast, popFlags } = createMermaidMdastPlugin();
+const { plugin: hast } = createMermaidHastPlugin({ ssg: true });
+
+// 处理完成后：
+const { hasMermaid } = popFlags(); // { hasMermaid: boolean }
 ```
 
-## 迁移（v0.2.x → v0.3.0）
+### 已废弃（v0.1.x 兼容）
 
-**如果你之前使用客户端 mermaid 渲染：**
+| 导出 | 替代 |
+|--------|-------------|
+| `mermaid()` | `mermaidMdast()` |
+| `mermaidPlugin` | `mermaidMdast()` |
+| `popFlags` (全局) | `createMermaidMdastPlugin().popFlags` |
+| `createMermaidPlugin()` | `createMermaidMdastPlugin()` |
 
-1. 升级到 `v0.3.0`，`ssg: true` 默认启用。
+## 迁移指南
 
-2. 从 Astro 组件中**删除**客户端 mermaid 脚本：
+### v0.2.x → v0.3.0
+
+1. 升级到 `>= 0.3.0`，安装 `beautiful-mermaid` 依赖。
+
+2. **删除**客户端 mermaid 脚本：
 ```diff
 - {props.hasMermaid && (
 -   <script>
@@ -130,31 +158,18 @@ HAST (ssg: false): 读取代码 → 还原为 <pre class="mermaid"> 供客户端
 - )}
 ```
 
-3. 如果其他地方不再使用，从 `package.json` **删除** `mermaid` 依赖。
+3. 如果其他地方不再使用，从 `package.json` 删除 `mermaid` 依赖。
 
-4. 完成——图表在构建时渲染，自适应宽度内置，零客户端 JS。
+4. 图表现在在构建时渲染，自适应宽度内置——零客户端 JS，零额外 CSS。
 
-## API
+## 示例
 
-### `mermaidMdast(options?)`
-
-工厂函数。返回 MDAST 插件，注册到 `mdastPlugins`。
-
-### `mermaidHast(options?)`
-
-工厂函数。返回 HAST 插件，注册到 `hastPlugins`。`ssg: true` 为默认值。
-
-### `createMermaidMdastPlugin(options?)`
-
-返回 `{ plugin, popFlags }`。需要 `popFlags()` 时使用。
-
-### `createMermaidHastPlugin(options?)`
-
-返回 `{ plugin }`。
-
-### `popFlags(): MermaidFlags`
-
-返回 `{ hasMermaid: boolean }` 并重置内部状态。
+```bash
+git clone https://github.com/xingwangzhe/satteri-mermaid.git
+cd satteri-mermaid/example
+bun install
+bun run build   # → dist/index.html（含内联 SVG）
+```
 
 ## License
 
