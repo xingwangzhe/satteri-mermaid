@@ -56,8 +56,6 @@ export interface ThemeRoles {
 export interface MermaidPluginOptions {
   /** 要匹配的代码块语言标识，默认 ["mermaid"] */
   langs?: string[];
-  /** SSG 构建时渲染为 SVG，默认 true */
-  ssg?: boolean;
   /** SVG 自适应容器宽度，默认 true */
   responsive?: boolean;
 
@@ -203,7 +201,6 @@ function resolveRoles(opts?: MermaidPluginOptions): ThemeRoles {
 export function createMermaidHastPlugin(options?: MermaidPluginOptions): {
   plugin: HastPluginDefinition;
 } {
-  const ssg = options?.ssg ?? true;
   const responsive = options?.responsive ?? true;
   const themePreset = options?.theme ?? "editor-dark";
   const themeRoles = resolveRoles(options);
@@ -270,15 +267,6 @@ export function createMermaidHastPlugin(options?: MermaidPluginOptions): {
   });
 
   function replaceWithSVG(node: any, code: string, ctx: any) {
-    if (!ssg) {
-      ctx.replaceNode(node, {
-        type: "element",
-        tagName: "pre",
-        properties: { className: ["mermaid"] },
-        children: [{ type: "text", value: code }],
-      });
-      return;
-    }
     try {
       const svgRaw = renderMermaidSVG(code.trim(), buildOptionsJson());
       const svg = responsive
