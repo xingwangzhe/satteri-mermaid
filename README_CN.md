@@ -1,173 +1,159 @@
 # @xingwangzhe/satteri-mermaid
 
-[English](README.md) | [中文文档](#)
+[English](README.md) | 中文文档
 
-> Sätteri MDAST + HAST 双插件：检测并安全渲染 Mermaid 图表代码块
+> Sätteri MDAST + HAST 双插件，用于检测和渲染 Mermaid 图表。
+> **v0.3.0: 支持构建时 SSG 静态 SVG 渲染，零客户端 JS。**
 
 ## 特性
 
+- **SSG SVG 渲染** — `ssg: true`（默认）通过 [`beautiful-mermaid`](https://github.com/lukilabs/beautiful-mermaid) 在构建时将图表渲染为静态 SVG。**无需客户端 `mermaid.js`。**
+- **自适应明暗主题** — 默认 SVG 颜色使用 CSS 变量（`var(--card-bg)`、`var(--muted-text)`），自动跟随站点主题切换。
 - **双插件架构** — MDAST 插件负责检测，HAST 插件负责安全渲染
-- **免疫 Sätteri 文本转换** — mermaid 代码在 Sätteri 处理**之后**才插入，`{"` 菱形节点不会被破坏
-- **零配置** — `mermaidMdast()` + `mermaidHast()` 开箱即用
-- **特性检测** — `popFlags()` 告诉你当前页面是否包含图表，方便按需加载 mermaid 库
-- **实例隔离** — 每次工厂函数调用返回独立插件实例
-- **TypeScript** — 全类型安全
+- **免疫 Sätteri 文本变换** — mermaid 代码存储在 `ctx.data` 中，在 Sätteri 处理后插入，避免 `{"` 被破坏
+- **特性检测** — `popFlags()` 可查询当前页面是否包含图表
+- **TypeScript** — 完整类型定义
 
 ## 安装
 
 ```bash
-bun add -D @xingwangzhe/satteri-mermaid
+bun add -D @xingwangzhe/satteri-mermaid beautiful-mermaid
 ```
 
-需要 `satteri >= 0.8.0` 和 `mermaid >= 11.0.0` 作为 peer dependencies。
+Peer dependencies: `satteri >= 0.8.0`。使用 `ssg: true` 时**不再需要** `mermaid`。
 
 ## 使用
 
-### 推荐用法（MDAST + HAST，v0.2.0 起）
-
 ```js
 // astro.config.mjs
+import { defineConfig } from "astro/config";
+import { satteri } from "@astrojs/markdown-satteri";
+import { katex } from "@nullpinter/satteri-katex";
+import { photoswipe } from "@xingwangzhe/satteri-photoswipe";
 import { mermaidMdast, mermaidHast } from "@xingwangzhe/satteri-mermaid";
 
 export default defineConfig({
   markdown: {
     processor: satteri({
       mdastPlugins: [katex(), mermaidMdast()],
-      hastPlugins: [photoswipe(), mermaidHast()],
+      hastPlugins: [
+        photoswipe(),
+        mermaidHast({
+          ssg: true,                                // 默认 true — 构建时静态 SVG
+          svgOptions: {
+            bg: "var(--card-bg, #1a1b26)",          // CSS 变量跟随主题，逗号后是回退值
+            fg: "var(--muted-text, #a9b1d6)",       // 同上
+            font: "inherit",                         // 可选：字体
+            padding: 40,                             // 可选：画布内边距
+          },
+        }),
+        // 如果不需要 SSG，传统客户端渲染：
+        // mermaidHast({ ssg: false }),
+      ],
     }),
   },
 });
 ```
 
-### 为什么需要 MDAST + HAST？
+添加自适应 CSS：
 
-Sätteri 会对其产生的**所有 raw HTML 内容**应用文本转换（例如把 `{"` 转换为弯引号形式）。这会破坏 mermaid 菱形节点语法（`C{"标签"}` → `C{'{'}"标签"{'}'}`），导致浏览器端报 "Syntax error"。
-
-解决方案：MDAST 插件只输出一个空的 `<pre class="mermaid">` 占位符，并将 mermaid 代码存入 `ctx.data`。HAST 插件在**所有 Sätteri 处理完成之后**运行，从 `ctx.data` 读取代码并填入 `<pre>` 元素——安全绕过所有文本转换。详见[工作原理](#工作原理)。
-
-### 高级用法（配合特性检测）
-
-```ts
-import { createMermaidMdastPlugin, createMermaidHastPlugin } from "@xingwangzhe/satteri-mermaid";
-
-const { plugin: mdastPlugin, popFlags } = createMermaidMdastPlugin({ langs: ["mermaid"] });
-const { plugin: hastPlugin } = createMermaidHastPlugin();
-
-// 注册插件：
-//   mdastPlugins: [mdastPlugin],
-//   hastPlugins:  [hastPlugin],
-
-// 处理后：
-const { hasMermaid } = popFlags();
-if (hasMermaid) {
-  await import("mermaid");
-  mermaid.run({ querySelector: ".mermaid" });
-}
+```css
+.mermaid svg { max-width: 100%; height: auto; }
 ```
+
+传统客户端渲染：`mermaidHast({ ssg: false })` — 输出 `<pre class="mermaid">code</pre>` 供浏览器端 `mermaid.run()`。
+
+## 选项
+
+| 选项 | 默认值 | 说明 |
+|--------|---------|------|
+| `ssg` | `true` | `true` = 构建时静态 SVG，`false` = 客户端 `mermaid.run()` |
+| `langs` | `["mermaid"]` | 要匹配的代码块语言标识符 |
+
+### `svgOptions` — 图表配色
+
+所有颜色值支持 CSS 变量（如 `var(--card-bg)`），逗号后为回退色值。
+
+| 选项 | 默认值 | 控制元素 |
+|--------|---------|----------|
+| `bg` | `var(--card-bg, #1a1b26)` | 画布背景 |
+| `fg` | `var(--muted-text, #a9b1d6)` | 节点标签、主文字 |
+| `line` | — | 连线 / 连接器 |
+| `accent` | — | 箭头、高亮节点 |
+| `muted` | — | 边标签、次要文字 |
+| `surface` | — | 节点填充 / 盒背景 |
+| `border` | — | 节点和分组边框 |
+
+### `svgOptions` — 布局
+
+| 选项 | 默认值 | 说明 |
+|--------|---------|------|
+| `font` | — | 字体（如 `"inherit"`） |
+| `padding` | `40` | 画布内边距（px） |
+| `nodeSpacing` | `24` | 节点水平间距（px） |
+| `layerSpacing` | `40` | 层级垂直间距（px） |
 
 ## 工作原理
 
-```mermaid
-flowchart TD
-    subgraph MD["1. Markdown"]
-        SRC["Markdown 中的
-mermaid 代码块"]
-    end
-
-    subgraph MDAST["2. MDAST 插件"]
-        STORE["将代码存入 ctx.data"]
-        EMPTY["输出空的 pre 占位符"]
-    end
-
-    subgraph SAT["3. Sätteri 处理"]
-        SAFE["没有 {&quot; 模式可被破坏"]
-    end
-
-    subgraph HAST["4. HAST 插件"]
-        READ["从 ctx.data 读取代码"]
-        FILL["将真实代码填入 pre"]
-    end
-
-    subgraph BROWSER["5. 浏览器"]
-        HTML["pre.mermaid 元素
-含完整代码"]
-        MM["mermaid.run()"]
-        SVG["SVG 图表"]
-    end
-
-    MD --> MDAST --> SAT --> HAST --> BROWSER
 ```
+MDAST: 代码块 → 存入 ctx.data → 输出空占位符
+                       ↓
+Sätteri 处理（占位符不会被修改）
+                       ↓
+HAST (ssg: true):  读取代码 → renderMermaidSVG() → 替换为 <div class="mermaid"><svg>...</svg></div>
+HAST (ssg: false): 读取代码 → 还原为 <pre class="mermaid"> 供客户端 mermaid.run()
+```
+
+## 迁移（v0.2.x → v0.3.0）
+
+**如果你之前使用客户端 mermaid 渲染：**
+
+1. 升级到 `v0.3.0`，`ssg: true` 默认启用。
+
+2. 从 Astro 组件中**删除**客户端 mermaid 脚本：
+```diff
+- {props.hasMermaid && (
+-   <script>
+-     import mermaid from "mermaid";
+-     mermaid.initialize({ startOnLoad: false, theme: "dark" });
+-     document.addEventListener("astro:page-load", () => {
+-       mermaid.run({ querySelector: ".mermaid" });
+-     });
+-   </script>
+- )}
+```
+
+3. 如果其他地方不再使用，从 `package.json` **删除** `mermaid` 依赖。
+
+4. 添加自适应 CSS：
+```css
+.mermaid svg { max-width: 100%; height: auto; }
+```
+
+5. 完成——图表现在在构建时渲染，零客户端 JS。
 
 ## API
 
 ### `mermaidMdast(options?)`
 
-工厂函数，返回 Sätteri **MDAST** 插件。注册到 `mdastPlugins`。
+工厂函数。返回 MDAST 插件，注册到 `mdastPlugins`。
 
 ### `mermaidHast(options?)`
 
-工厂函数，返回 Sätteri **HAST** 插件。注册到 `hastPlugins`。
-
-### 共享参数
-
-| 参数    | 类型       | 默认值        | 说明             |
-| ------- | ---------- | ------------- | ---------------- |
-| `langs` | `string[]` | `["mermaid"]` | 匹配的代码块语言 |
+工厂函数。返回 HAST 插件，注册到 `hastPlugins`。`ssg: true` 为默认值。
 
 ### `createMermaidMdastPlugin(options?)`
 
-返回 `{ plugin, popFlags }`。需要 `popFlags` 做特性检测时使用。
+返回 `{ plugin, popFlags }`。需要 `popFlags()` 时使用。
 
 ### `createMermaidHastPlugin(options?)`
 
-返回 `{ plugin }`。配套的 HAST 插件。
+返回 `{ plugin }`。
 
 ### `popFlags(): MermaidFlags`
 
 返回 `{ hasMermaid: boolean }` 并重置内部状态。
 
-## 迁移指南（v0.1.x → v0.2.0）
-
-**之前：**
-
-```js
-import { mermaid } from "@xingwangzhe/satteri-mermaid";
-
-mdastPlugins: [katex(), mermaid()],
-```
-
-**之后：**
-
-```js
-import { mermaidMdast, mermaidHast } from "@xingwangzhe/satteri-mermaid";
-
-mdastPlugins: [katex(), mermaidMdast()],
-hastPlugins: [photoswipe(), mermaidHast()],
-```
-
-如果使用了 `createMermaidPlugin()` + `popFlags()`：
-
-```diff
-- import { createMermaidPlugin } from "@xingwangzhe/satteri-mermaid";
-- const { plugin, popFlags } = createMermaidPlugin();
-+ import { createMermaidMdastPlugin, createMermaidHastPlugin } from "@xingwangzhe/satteri-mermaid";
-+ const { plugin: mdastPlugin, popFlags } = createMermaidMdastPlugin();
-+ const { plugin: hastPlugin } = createMermaidHastPlugin();
-```
-
-> **注意：** `mermaid()` 和 `mermaidPlugin` 仍然可用，但已标记为 deprecated。它们仅返回 MDAST 插件，**不能**防止 Sätteri 文本转换破坏 mermaid 代码。请迁移到双插件方案以获得正确的渲染。
-
-## 开发
-
-```bash
-bun install
-bun run dev     # vite 开发服务器 → http://localhost:5173（示例页面）
-bun run build   # vite build + tsc → dist/
-bun run test    # vitest
-bun run lint    # oxlint
-bun run fmt     # oxfmt
-```
-
-## 许可
+## License
 
 MIT

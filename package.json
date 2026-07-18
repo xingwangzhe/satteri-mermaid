@@ -1,6 +1,6 @@
 {
   "name": "@xingwangzhe/satteri-mermaid",
-  "version": "0.2.10",
+  "version": "0.3.0",
   "description": "Satteri MDAST plugin for Mermaid diagram detection and transformation",
   "keywords": [
     "astro",
@@ -34,8 +34,10 @@
     }
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "cd example && bun run dev",
+    "dev:plugin": "vite",
     "build": "vite build && tsc --emitDeclarationOnly --declarationDir dist",
+    "build:example": "cd example && bun run build",
     "test": "vitest run",
     "test:watch": "vitest",
     "fmt": "oxfmt",
@@ -57,5 +59,8 @@
   "peerDependencies": {
     "mermaid": ">=11.0.0",
     "satteri": ">=0.8.0"
+  },
+  "dependencies": {
+    "beautiful-mermaid": "^1.1.3"
   }
 }

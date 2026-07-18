@@ -1,5 +1,6 @@
 import { defineMdastPlugin, defineHastPlugin } from "satteri";
 import type { HastVisitorContext, MdastPluginDefinition, HastPluginDefinition } from "satteri";
+import { renderMermaidSVG } from "beautiful-mermaid";
 
 const DATA_KEY = "__satteri_mermaid_codes";
 
@@ -10,6 +11,35 @@ export interface MermaidFlags {
 export interface MermaidPluginOptions {
   /** 要匹配的代码块语言标识，默认 ["mermaid"] */
   langs?: string[];
+  /** SSG 构建时渲染为 SVG，默认 true */
+  ssg?: boolean;
+  /** SVG 自适应容器宽度，默认 true。自动添加 max-width:100%;height:auto */
+  responsive?: boolean;
+  /** SVG 渲染选项（仅 ssg: true 时生效） */
+  svgOptions?: {
+    /** 背景色，支持 CSS 变量。默认 var(--card-bg, #1a1b26) */
+    bg?: string;
+    /** 前景/主文字色，支持 CSS 变量。默认 var(--muted-text, #a9b1d6) */
+    fg?: string;
+    /** 连线/箭头颜色 */
+    line?: string;
+    /** 高亮/特殊节点颜色 */
+    accent?: string;
+    /** 次要文字/边标签颜色 */
+    muted?: string;
+    /** 节点填充色 */
+    surface?: string;
+    /** 节点/分组边框色 */
+    border?: string;
+    /** 字体，默认 inherit */
+    font?: string;
+    /** 画布内边距(px)，默认 40 */
+    padding?: number;
+    /** 节点水平间距(px)，默认 24 */
+    nodeSpacing?: number;
+    /** 层级垂直间距(px)，默认 40 */
+    layerSpacing?: number;
+  };
 }
 
 // =============================================================================
@@ -108,25 +138,21 @@ export function createMermaidMdastPlugin(options?: MermaidPluginOptions): {
 }
 
 // =============================================================================
-// HAST Plugin — reads code from ctx.data, populates <pre class="mermaid">
-// =============================================================================
-// HAST Plugin — reads code from ctx.data, populates <pre class="mermaid">
-//
-// The MDAST plugin's `rawHtml` output becomes a HAST `raw` node (not `element`),
-// because Sätteri passes raw HTML through as-is. So we use the `raw` visitor
-// to intercept our placeholder and replace it with a proper `<pre>` element
-// containing the real mermaid code (which is now safe from Sätteri's
-// text transformations).
+// HAST Plugin — 还原 mermaid 代码块。ssg: true 时直接渲染为静态 SVG
 // =============================================================================
 
-export function createMermaidHastPlugin(_options?: MermaidPluginOptions): {
+export function createMermaidHastPlugin(options?: MermaidPluginOptions): {
   plugin: HastPluginDefinition;
 } {
+  const ssg = options?.ssg ?? true;
+  const responsive = options?.responsive ?? true;
+  const svgOpts = options?.svgOptions;
+  const wrapperStyle = responsive ? "max-width:100%;overflow:hidden" : "";
+
   const plugin = defineHastPlugin({
     name: "satteri-mermaid-hast",
 
     raw(node, ctx: HastVisitorContext) {
-      // Only process our placeholder <pre> elements
       const match = node.value.match(/^<pre class="mermaid" data-mermaid-id="([^"]+)"><\/pre>$/);
       if (!match) return;
 
@@ -135,15 +161,50 @@ export function createMermaidHastPlugin(_options?: MermaidPluginOptions): {
       const code = bag?.[id];
       if (!code) return;
 
-      // Replace the raw placeholder with a proper HAST element.
-      // At this point Sätteri has finished all processing,
-      // so {" patterns inside `code` are safe.
-      ctx.replaceNode(node, {
-        type: "element",
-        tagName: "pre",
-        properties: { className: ["mermaid"] },
-        children: [{ type: "text", value: code }],
-      });
+      if (ssg) {
+        // 构建时渲染为静态 SVG，bg/fg 支持 CSS 变量（如 var(--card-bg)）
+        try {
+          const svgRaw = renderMermaidSVG(code.trim(), {
+            bg: svgOpts?.bg ?? "var(--card-bg, #1a1b26)",
+            fg: svgOpts?.fg ?? "var(--muted-text, #a9b1d6)",
+            line: svgOpts?.line,
+            accent: svgOpts?.accent,
+            muted: svgOpts?.muted,
+            surface: svgOpts?.surface,
+            border: svgOpts?.border,
+            font: svgOpts?.font,
+            padding: svgOpts?.padding ?? 40,
+            nodeSpacing: svgOpts?.nodeSpacing,
+            layerSpacing: svgOpts?.layerSpacing,
+          });
+          // 去掉根 SVG 的固定宽高，让 viewBox 控制缩放
+          const svg = responsive
+            ? svgRaw
+                .replace(/\b(width|height)="[^"]*"/g, "")
+                .replace(/ style="([^"]+)"/, (_, inner) => ` style="width:100%;display:block;${inner}"`)
+            : svgRaw;
+          ctx.replaceNode(node, {
+            type: "raw",
+            value: `<div class="mermaid" data-mermaid-ssg="true" style="${wrapperStyle}">${svg}</div>`,
+          });
+        } catch {
+          // 渲染失败时回退为纯代码块
+          ctx.replaceNode(node, {
+            type: "element",
+            tagName: "pre",
+            properties: { className: ["mermaid"] },
+            children: [{ type: "text", value: code }],
+          });
+        }
+      } else {
+        // 传统模式：保留代码，运行时客户端渲染
+        ctx.replaceNode(node, {
+          type: "element",
+          tagName: "pre",
+          properties: { className: ["mermaid"] },
+          children: [{ type: "text", value: code }],
+        });
+      }
     },
   });
 

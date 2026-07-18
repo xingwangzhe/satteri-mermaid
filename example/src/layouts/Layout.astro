@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@xingwangzhe/satteri-mermaid — SSG Example</title>
+    <style>
+      :root {
+        --bg: #0d1117;
+        --fg: #c9d1d9;
+        --card-bg: #161b22;
+        --accent: #58a6ff;
+        --muted: #8b949e;
+        --border: #30363d;
+        --code-bg: #0d1117;
+        /* mermaid diagram colors — dark mode */
+        --mermaid-bg: #161b22;
+        --mermaid-fg: #c9d1d9;
+        --mermaid-line: #58a6ff;
+        --mermaid-accent: #58a6ff;
+        --mermaid-muted: #8b949e;
+        --mermaid-surface: #0d1117;
+        --mermaid-border: #30363d;
+      }
+      :root.light {
+        --bg: #ffffff;
+        --fg: #24292f;
+        --card-bg: #f6f8fa;
+        --accent: #0969da;
+        --muted: #57606a;
+        --border: #d0d7de;
+        --code-bg: #f6f8fa;
+        /* mermaid diagram colors — light mode */
+        --mermaid-bg: #ffffff;
+        --mermaid-fg: #24292f;
+        --mermaid-line: #0969da;
+        --mermaid-accent: #0969da;
+        --mermaid-muted: #57606a;
+        --mermaid-surface: #f6f8fa;
+        --mermaid-border: #d0d7de;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: var(--bg);
+        color: var(--fg);
+        line-height: 1.7;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+      }
+      h1 { font-size: 2rem; margin-bottom: 0.5rem; color: var(--accent); }
+      h2 { font-size: 1.4rem; margin: 2.5rem 0 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.3rem; }
+      h3 { font-size: 1.15rem; margin: 1.5rem 0 0.5rem; }
+      p { margin-bottom: 1rem; }
+      code { background: var(--code-bg); padding: 0.1em 0.3em; border-radius: 3px; font-size: 0.9em; }
+      pre, .mermaid {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 1rem;
+        margin: 1rem 0 1.5rem;
+        overflow-x: auto;
+        font-size: 0.85rem;
+      }
+      .mermaid svg { max-width: 100%; height: auto; display: block; margin: 0 auto; }
+      a { color: var(--accent); text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      .nav { margin-bottom: 2rem; display: flex; gap: 1rem; align-items: center; }
+      .nav a { color: var(--fg); }
+      .badge {
+        display: inline-block;
+        background: var(--code-bg);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 0.15rem 0.5rem;
+        font-size: 0.8rem;
+        margin-right: 0.3rem;
+      }
+      .badge.green { color: #7ee787; border-color: #238636; }
+      button {
+        border: 1px solid var(--border);
+        background: var(--card-bg);
+        color: var(--fg);
+        border-radius: 6px;
+        padding: 0.3rem 0.8rem;
+        cursor: pointer;
+        font-size: 0.85rem;
+      }
+      .post-list { list-style: none; }
+      .post-list li { padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
+      .post-list a { font-size: 1.05rem; }
+      .meta { color: var(--muted); font-size: 0.85rem; margin-bottom: 1.5rem; }
+    </style>
+  </head>
+  <body>
+    <div class="nav">
+      <a href="/">Home</a>
+      <button id="toggle-theme">Toggle Theme</button>
+    </div>
+    <slot />
+    <script>
+      document.getElementById("toggle-theme").addEventListener("click", () => {
+        document.documentElement.classList.toggle("light");
+      });
+    </script>
+  </body>
+</html>

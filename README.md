@@ -1,170 +1,144 @@
 # @xingwangzhe/satteri-mermaid
 
 > Sätteri MDAST + HAST plugin for Mermaid diagram detection and transformation.
+> **v0.3.0: SSG SVG rendering — zero client JS.**
 
 ## Features
 
+- **SSG SVG rendering** — `ssg: true` (default) renders diagrams as static SVG at build time via [`beautiful-mermaid`](https://github.com/lukilabs/beautiful-mermaid). **No client-side `mermaid.js` needed.**
+- **Theme-adaptive** — default SVG colors use CSS variables (`var(--card-bg)`, `var(--muted-text)`), follow your site's light/dark theme automatically.
 - **Dual-plugin architecture** — MDAST plugin for detection, HAST plugin for safe rendering
-- **Immune to Sätteri text transforms** — mermaid code is inserted _after_ Sätteri processing, so `{"` diamond nodes survive
-- **Zero-config** — `mermaidMdast()` + `mermaidHast()` just work
-- **Feature detection** — `popFlags()` tells you whether the page has diagrams, so you can lazy-load mermaid
-- **Isolated instances** — each factory call returns an independent plugin instance
+- **Immune to Sätteri text transforms** — mermaid code is stored in `ctx.data` and inserted _after_ Sätteri processing
+- **Feature detection** — `popFlags()` tells you whether the page has diagrams
 - **TypeScript** — fully typed
 
 ## Install
 
 ```bash
-bun add -D @xingwangzhe/satteri-mermaid
+bun add -D @xingwangzhe/satteri-mermaid beautiful-mermaid
 ```
 
-Requires `satteri >= 0.8.0` and `mermaid >= 11.0.0` as peer dependencies.
+Peer dependencies: `satteri >= 0.8.0`. `mermaid` is **no longer required** when using `ssg: true`.
 
 ## Usage
 
-### Recommended (MDAST + HAST, since v0.2.0)
-
 ```js
 // astro.config.mjs
+import { defineConfig } from "astro/config";
+import { satteri } from "@astrojs/markdown-satteri";
+import { katex } from "@nullpinter/satteri-katex";
+import { photoswipe } from "@xingwangzhe/satteri-photoswipe";
 import { mermaidMdast, mermaidHast } from "@xingwangzhe/satteri-mermaid";
 
 export default defineConfig({
   markdown: {
     processor: satteri({
       mdastPlugins: [katex(), mermaidMdast()],
-      hastPlugins: [photoswipe(), mermaidHast()],
+      hastPlugins: [
+        photoswipe(),
+        mermaidHast({
+          ssg: true,                                // default: true — 构建时静态 SVG
+          svgOptions: {
+            bg: "var(--card-bg, #1a1b26)",          // CSS 变量跟随主题，逗号后是回退值
+            fg: "var(--muted-text, #a9b1d6)",       // 同上
+            font: "inherit",                         // 可选：字体
+            padding: 40,                             // 可选：画布内边距
+          },
+        }),
+        // 如果不需要 SSG，传统客户端渲染：
+        // mermaidHast({ ssg: false }),
+      ],
     }),
   },
 });
 ```
 
-### Why MDAST + HAST?
+The `responsive: true` (default) automatically adds responsive width — no extra CSS needed.Legacy client-side rendering: `mermaidHast({ ssg: false })` — outputs `<pre class="mermaid">code</pre>` for browser-side `mermaid.run()`.
 
-Sätteri applies text transformations (like converting `{"` to curly-quote equivalents) to **all raw HTML content** produced by MDAST plugins. This corrupts mermaid diamond-node syntax (`C{"label"}` → `C{'{'}"label"{'}'}`), causing browser-side "Syntax error".
+## Options
 
-The solution: the MDAST plugin only outputs an empty `<pre class="mermaid">` placeholder and stores the mermaid code in `ctx.data`. The HAST plugin runs **after** all Sätteri processing is complete, reads the code from `ctx.data`, and populates the `<pre>` element — safely bypassing any text transforms. See [How It Works](#how-it-works) for a visual overview.
+| Option | Default | Controls |
+|--------|---------|----------|
+| `ssg` | `true` | `true` = build-time SVG, `false` = client-side `mermaid.run()` |
+| `responsive` | `true` | 自动添加 `max-width:100%;height:auto`，无需手写 CSS |
+| `langs` | `["mermaid"]` | Code block language identifiers to match |
 
-### Advanced (with feature detection)
+### `svgOptions` — diagram colors
 
-```ts
-import { createMermaidMdastPlugin, createMermaidHastPlugin } from "@xingwangzhe/satteri-mermaid";
+All color values accept CSS variables (e.g. `var(--card-bg)`) with a fallback hex after comma.
 
-const { plugin: mdastPlugin, popFlags } = createMermaidMdastPlugin({ langs: ["mermaid"] });
-const { plugin: hastPlugin } = createMermaidHastPlugin();
+| Option | Default | Visual element |
+|--------|---------|----------------|
+| `bg` | `var(--card-bg, #1a1b26)` | Canvas background |
+| `fg` | `var(--muted-text, #a9b1d6)` | Node labels, primary text |
+| `line` | — | Edge lines / connectors |
+| `accent` | — | Arrow heads, highlight nodes |
+| `muted` | — | Edge labels, secondary text |
+| `surface` | — | Node fill / box background |
+| `border` | — | Node & group borders |
 
-// Register plugins:
-//   mdastPlugins: [mdastPlugin],
-//   hastPlugins:  [hastPlugin],
+### `svgOptions` — layout
 
-// After processing:
-const { hasMermaid } = popFlags();
-if (hasMermaid) {
-  await import("mermaid");
-  mermaid.run({ querySelector: ".mermaid" });
-}
-```
+| Option | Default | Controls |
+|--------|---------|----------|
+| `font` | — | Font family (e.g. `"inherit"`) |
+| `padding` | `40` | Canvas padding (px) |
+| `nodeSpacing` | `24` | Horizontal spacing between nodes (px) |
+| `layerSpacing` | `40` | Vertical spacing between layers (px) |
 
 ## How It Works
 
-```mermaid
-flowchart TD
-    subgraph MD["1. Markdown"]
-        SRC["mermaid code block
-in Markdown source"]
-    end
-
-    subgraph MDAST["2. MDAST Plugin"]
-        STORE["store code in ctx.data"]
-        EMPTY["output empty pre placeholder"]
-    end
-
-    subgraph SAT["3. Sätteri Processing"]
-        SAFE["no {&quot; pattern to corrupt"]
-    end
-
-    subgraph HAST["4. HAST Plugin"]
-        READ["read code from ctx.data"]
-        FILL["populate pre with real code"]
-    end
-
-    subgraph BROWSER["5. Browser"]
-        HTML["pre.mermaid element
-with clean code"]
-        MM["mermaid.run()"]
-        SVG["SVG diagram"]
-    end
-
-    MD --> MDAST --> SAT --> HAST --> BROWSER
 ```
+MDAST: code block → store in ctx.data → output empty placeholder
+                       ↓
+Sätteri processing (placeholder untouched)
+                       ↓
+HAST (ssg: true):  read code → renderMermaidSVG() → replace with <div class="mermaid"><svg>...</svg></div>
+HAST (ssg: false): read code → restore <pre class="mermaid"> for client-side mermaid.run()
+```
+
+## Migration (v0.2.x → v0.3.0)
+
+**If you were using client-side mermaid:**
+
+1. Update to `v0.3.0` — `ssg: true` is the default.
+
+2. From your Astro component, **remove** the client-side mermaid script:
+```diff
+- {props.hasMermaid && (
+-   <script>
+-     import mermaid from "mermaid";
+-     mermaid.initialize({ startOnLoad: false, theme: "dark" });
+-     document.addEventListener("astro:page-load", () => {
+-       mermaid.run({ querySelector: ".mermaid" });
+-     });
+-   </script>
+- )}
+```
+
+3. That's it — diagrams now render at build time with responsive width built-in, zero client JS.
 
 ## API
 
 ### `mermaidMdast(options?)`
 
-Factory function. Returns a Sätteri **MDAST** plugin. Register in `mdastPlugins`.
+Factory. Returns MDAST plugin for `mdastPlugins`.
 
 ### `mermaidHast(options?)`
 
-Factory function. Returns a Sätteri **HAST** plugin. Register in `hastPlugins`.
-
-### Shared Options
-
-| Option  | Type       | Default       | Description                     |
-| ------- | ---------- | ------------- | ------------------------------- |
-| `langs` | `string[]` | `["mermaid"]` | Code block language identifiers |
+Factory. Returns HAST plugin for `hastPlugins`. `ssg: true` by default.
 
 ### `createMermaidMdastPlugin(options?)`
 
-Returns `{ plugin, popFlags }`. Use this when you need `popFlags` for feature detection.
+Returns `{ plugin, popFlags }`. Use when you need `popFlags()`.
 
 ### `createMermaidHastPlugin(options?)`
 
-Returns `{ plugin }`. Companion HAST plugin for the MDAST one above.
+Returns `{ plugin }`.
 
 ### `popFlags(): MermaidFlags`
 
 Returns `{ hasMermaid: boolean }` and resets internal state.
-
-## Migration (v0.1.x → v0.2.0)
-
-**Before:**
-
-```js
-import { mermaid } from "@xingwangzhe/satteri-mermaid";
-
-mdastPlugins: [katex(), mermaid()],
-```
-
-**After:**
-
-```js
-import { mermaidMdast, mermaidHast } from "@xingwangzhe/satteri-mermaid";
-
-mdastPlugins: [katex(), mermaidMdast()],
-hastPlugins: [photoswipe(), mermaidHast()],
-```
-
-If you use `createMermaidPlugin()` + `popFlags()`:
-
-```diff
-- import { createMermaidPlugin } from "@xingwangzhe/satteri-mermaid";
-- const { plugin, popFlags } = createMermaidPlugin();
-+ import { createMermaidMdastPlugin, createMermaidHastPlugin } from "@xingwangzhe/satteri-mermaid";
-+ const { plugin: mdastPlugin, popFlags } = createMermaidMdastPlugin();
-+ const { plugin: hastPlugin } = createMermaidHastPlugin();
-```
-
-> **Note:** `mermaid()` and `mermaidPlugin` are still available as deprecated aliases. They only return the MDAST plugin and do **not** protect against Sätteri text transforms. Migrate to the dual-plugin approach for correct rendering.
-
-## Development
-
-```bash
-bun install
-bun run dev     # vite dev server → http://localhost:5173 (example page)
-bun run build   # vite build + tsc → dist/
-bun run test    # vitest
-bun run lint    # oxlint
-bun run fmt     # oxfmt
-```
 
 ## License
 
