@@ -10,7 +10,7 @@ export default defineConfig(({ command }) => ({
       fileName: (format) => `index.${format === "es" ? "mjs" : "cjs"}`,
     },
     rollupOptions: {
-      external: ["satteri", "mermaid"],
+      external: ["satteri"],
     },
   },
 }));
