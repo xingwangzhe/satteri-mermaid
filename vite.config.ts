@@ -1,16 +1,24 @@
 import { resolve } from "node:path";
 import { defineConfig } from "vite";
 
-export default defineConfig(({ command }) => ({
-  root: command === "serve" ? "example" : undefined,
+export default defineConfig({
   build: {
     lib: {
       entry: resolve(__dirname, "src/index.ts"),
-      formats: ["es", "cjs"],
-      fileName: (format) => `index.${format === "es" ? "mjs" : "cjs"}`,
+      formats: ["es"],
+      fileName: () => "index.mjs",
     },
     rollupOptions: {
-      external: ["satteri"],
+      external: [
+        "satteri",
+        "@mermanjs/web",
+        /^@mermanjs\/web\/.*/,
+        /^node:/,
+        "fs",
+        "path",
+        "url",
+        "module",
+      ],
     },
   },
-}));
+});

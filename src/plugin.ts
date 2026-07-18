@@ -1,11 +1,56 @@
 import { defineMdastPlugin, defineHastPlugin } from "satteri";
 import type { HastVisitorContext, MdastPluginDefinition, HastPluginDefinition } from "satteri";
-import { renderMermaidSVG } from "beautiful-mermaid";
+import { renderMermaidSVG, initRenderer } from "./renderer";
 
 const DATA_KEY = "__satteri_mermaid_codes";
 
+// 模块加载时等待 WASM 初始化完成（ESM top-level await）
+try {
+  await initRenderer();
+} catch (e) {
+  console.error("[satteri-mermaid] merman WASM init failed:", (e as Error).message);
+}
+
+// ── 类型 ──────────────────────────────────────────────────────────
+
 export interface MermaidFlags {
   hasMermaid: boolean;
+}
+
+/** merman 主机主题预设 */
+export type HostThemePreset =
+  | "editor-light"
+  | "editor-dark"
+  | "one-dark"
+  | "gruvbox-light"
+  | "gruvbox-dark"
+  | "ayu-light"
+  | "ayu-dark";
+
+/** 逐色覆盖项（与 merman HostThemeRolesOptions 对齐） */
+export interface ThemeRoles {
+  canvas?: string;
+  surface?: string;
+  surface_alt?: string;
+  surface_muted?: string;
+  text?: string;
+  subtle_text?: string;
+  border?: string;
+  line?: string;
+  edge_label_background?: string;
+  cluster_background?: string;
+  cluster_border?: string;
+  note_background?: string;
+  note_border?: string;
+  note_text?: string;
+  actor_background?: string;
+  actor_border?: string;
+  actor_text?: string;
+  activation_background?: string;
+  activation_border?: string;
+  error?: string;
+  warning?: string;
+  success?: string;
 }
 
 export interface MermaidPluginOptions {
@@ -13,38 +58,36 @@ export interface MermaidPluginOptions {
   langs?: string[];
   /** SSG 构建时渲染为 SVG，默认 true */
   ssg?: boolean;
-  /** SVG 自适应容器宽度，默认 true。自动添加 max-width:100%;height:auto */
+  /** SVG 自适应容器宽度，默认 true */
   responsive?: boolean;
-  /** SVG 渲染选项（仅 ssg: true 时生效） */
+
+  /** 主题预设，默认 "editor-dark" */
+  theme?: HostThemePreset;
+  /** 逐色覆盖预设中的颜色（支持 CSS 变量） */
+  themeOverrides?: ThemeRoles;
+  /** 字体族 */
+  font?: string;
+
+  /**
+   * @deprecated 使用 theme + themeOverrides 代替。
+   * 旧版 beautiful-mermaid 风格的颜色选项，自动映射到 themeOverrides。
+   */
   svgOptions?: {
-    /** 背景色，支持 CSS 变量。默认 var(--card-bg, #1a1b26) */
     bg?: string;
-    /** 前景/主文字色，支持 CSS 变量。默认 var(--muted-text, #a9b1d6) */
     fg?: string;
-    /** 连线/箭头颜色 */
     line?: string;
-    /** 高亮/特殊节点颜色 */
     accent?: string;
-    /** 次要文字/边标签颜色 */
     muted?: string;
-    /** 节点填充色 */
     surface?: string;
-    /** 节点/分组边框色 */
     border?: string;
-    /** 字体，默认 inherit */
     font?: string;
-    /** 画布内边距(px)，默认 40 */
     padding?: number;
-    /** 节点水平间距(px)，默认 24 */
     nodeSpacing?: number;
-    /** 层级垂直间距(px)，默认 40 */
     layerSpacing?: number;
   };
 }
 
-// =============================================================================
-// MDAST Plugin — stores mermaid code in ctx.data, outputs empty <pre> placeholder
-// =============================================================================
+// ── MDAST Plugin ──────────────────────────────────────────────────
 
 export function createMermaidMdastPlugin(options?: MermaidPluginOptions): {
   plugin: MdastPluginDefinition;
@@ -76,7 +119,6 @@ export function createMermaidMdastPlugin(options?: MermaidPluginOptions): {
         hasMermaid = true;
         flush();
         const id = `mermaid-${counter++}`;
-        // Store the raw mermaid code in the shared data bag
         if (ctx.data) {
           const bag = ctx.data[DATA_KEY] as Record<string, string> | undefined;
           if (bag) {
@@ -85,7 +127,6 @@ export function createMermaidMdastPlugin(options?: MermaidPluginOptions): {
             ctx.data[DATA_KEY] = { [id]: node.value };
           }
         }
-        // Output an empty placeholder — Sätteri won't corrupt this
         return {
           rawHtml: `<pre class="mermaid" data-mermaid-id="${id}"></pre>`,
         };
@@ -93,39 +134,17 @@ export function createMermaidMdastPlugin(options?: MermaidPluginOptions): {
       flush();
     },
 
-    heading() {
-      flush();
-    },
-    paragraph() {
-      flush();
-    },
-    blockquote() {
-      flush();
-    },
-    list() {
-      flush();
-    },
-    table() {
-      flush();
-    },
-    html() {
-      flush();
-    },
-    thematicBreak() {
-      flush();
-    },
-    math() {
-      flush();
-    },
-    inlineMath() {
-      flush();
-    },
-    image() {
-      flush();
-    },
-    imageReference() {
-      flush();
-    },
+    heading() { flush(); },
+    paragraph() { flush(); },
+    blockquote() { flush(); },
+    list() { flush(); },
+    table() { flush(); },
+    html() { flush(); },
+    thematicBreak() { flush(); },
+    math() { flush(); },
+    inlineMath() { flush(); },
+    image() { flush(); },
+    imageReference() { flush(); },
   });
 
   const popFlags = (): MermaidFlags => {
@@ -137,26 +156,78 @@ export function createMermaidMdastPlugin(options?: MermaidPluginOptions): {
   return { plugin, popFlags };
 }
 
-// =============================================================================
-// HAST Plugin — 还原 mermaid 代码块。ssg: true 时直接渲染为静态 SVG
-// =============================================================================
+// ── HAST Plugin ───────────────────────────────────────────────────
+
+function resolveRoles(opts?: MermaidPluginOptions): ThemeRoles {
+  const roles: ThemeRoles = {};
+
+  // 新版 themeOverrides 优先
+  if (opts?.themeOverrides) {
+    Object.assign(roles, opts.themeOverrides);
+  }
+
+  // 旧版 svgOptions → 自动映射
+  const svg = opts?.svgOptions;
+  if (svg) {
+    if (svg.bg) {
+      roles.canvas ??= svg.bg;
+      roles.cluster_background ??= svg.bg;
+    }
+    if (svg.fg) {
+      roles.text ??= svg.fg;
+      roles.subtle_text ??= svg.fg;
+    }
+    if (svg.surface) roles.surface ??= svg.surface;
+    if (svg.border) {
+      roles.border ??= svg.border;
+      roles.cluster_border ??= svg.border;
+      roles.actor_border ??= svg.border;
+    }
+    if (svg.line) {
+      roles.line ??= svg.line;
+      roles.activation_border ??= svg.line;
+    }
+    if (svg.accent) {
+      roles.note_background ??= svg.accent;
+      roles.actor_background ??= svg.accent;
+    }
+    if (svg.muted) {
+      roles.note_text ??= svg.muted;
+      roles.actor_text ??= svg.muted;
+    }
+  }
+
+  return roles;
+}
 
 export function createMermaidHastPlugin(options?: MermaidPluginOptions): {
   plugin: HastPluginDefinition;
 } {
   const ssg = options?.ssg ?? true;
   const responsive = options?.responsive ?? true;
-  const svgOpts = options?.svgOptions;
+  const themePreset = options?.theme ?? "editor-dark";
+  const themeRoles = resolveRoles(options);
+  const font = options?.font ?? options?.svgOptions?.font;
   const wrapperStyle = responsive ? "max-width:100%;overflow:hidden" : "";
+
+  function buildOptionsJson(): string {
+    const hostTheme: Record<string, unknown> = {
+      preset: themePreset,
+      roles: themeRoles,
+    };
+    if (font) hostTheme.font_family = font;
+
+    return JSON.stringify({
+      svg: { pipeline: "readable" },
+      host_theme: hostTheme,
+    });
+  }
 
   const plugin = defineHastPlugin({
     name: "satteri-mermaid-hast",
 
-    // 路径 A：raw 节点 — 处理被语法高亮插件转换后的 <pre class="mermaid"> 占位符
-    // MDAST 阶段通过 rawHtml 输出的 <pre class="mermaid" data-mermaid-id="xxx"></pre>
-    // 以 HAST raw 节点进入管线。语法高亮插件可能将其包裹为带 <code> 的格式。
+    // 路径 A：raw 节点
     raw(node, ctx) {
-      // 匹配 <pre class="mermaid" ...> ... </pre>
       const preMatch = node.value.match(
         /<pre\s[^>]*\bclass="mermaid"[^>]*>([\s\S]*?)<\/pre>/i,
       );
@@ -164,19 +235,17 @@ export function createMermaidHastPlugin(options?: MermaidPluginOptions): {
 
       let code: string | undefined;
 
-      // 优先从 data-mermaid-id 读取 MDAST 阶段存储的原始代码（未经高亮污染）
       const idMatch = node.value.match(/data-mermaid-id="([^"]*)"/);
       if (idMatch) {
         const bag = ctx.data?.[DATA_KEY] as Record<string, string> | undefined;
         code = bag?.[idMatch[1]];
       }
 
-      // 回退：高亮后 innerHTML 中含 <code><span>…</span></code>，剥离标签取纯文本
       if (!code) {
         const inner = preMatch[1];
-        if (!inner.trim()) return; // 空占位符且 ctx.data 中无对应代码 → 跳过
+        if (!inner.trim()) return;
         code = inner
-          .replace(/<[^>]*>/g, "")       // 去掉高亮 span/code 标签
+          .replace(/<[^>]*>/g, "")
           .replace(/&lt;/g, "<")
           .replace(/&gt;/g, ">")
           .replace(/&amp;/g, "&")
@@ -187,7 +256,7 @@ export function createMermaidHastPlugin(options?: MermaidPluginOptions): {
       replaceWithSVG(node, code, ctx);
     },
 
-    // 路径 B：element 节点 — <pre class="mermaid">code</pre>，直接匹配 className
+    // 路径 B：element 节点
     element: {
       filter: ["pre"],
       visit(node, ctx) {
@@ -202,7 +271,6 @@ export function createMermaidHastPlugin(options?: MermaidPluginOptions): {
 
   function replaceWithSVG(node: any, code: string, ctx: any) {
     if (!ssg) {
-      // 传统模式：保留代码，运行时客户端渲染
       ctx.replaceNode(node, {
         type: "element",
         tagName: "pre",
@@ -211,21 +279,8 @@ export function createMermaidHastPlugin(options?: MermaidPluginOptions): {
       });
       return;
     }
-    // SSG：构建时渲染为静态 SVG
     try {
-      const svgRaw = renderMermaidSVG(code.trim(), {
-        bg: svgOpts?.bg ?? "var(--card-bg, #1a1b26)",
-        fg: svgOpts?.fg ?? "var(--muted-text, #a9b1d6)",
-        line: svgOpts?.line,
-        accent: svgOpts?.accent,
-        muted: svgOpts?.muted,
-        surface: svgOpts?.surface,
-        border: svgOpts?.border,
-        font: svgOpts?.font,
-        padding: svgOpts?.padding ?? 40,
-        nodeSpacing: svgOpts?.nodeSpacing,
-        layerSpacing: svgOpts?.layerSpacing,
-      });
+      const svgRaw = renderMermaidSVG(code.trim(), buildOptionsJson());
       const svg = responsive
         ? svgRaw
             .replace(/\b(width|height)="[^"]*"/g, "")
@@ -236,7 +291,6 @@ export function createMermaidHastPlugin(options?: MermaidPluginOptions): {
         value: `<div class="mermaid" data-mermaid-ssg="true" style="${wrapperStyle}">${svg}</div>`,
       });
     } catch {
-      // 渲染失败时回退为纯代码块
       ctx.replaceNode(node, {
         type: "element",
         tagName: "pre",
@@ -249,30 +303,21 @@ export function createMermaidHastPlugin(options?: MermaidPluginOptions): {
   return { plugin };
 }
 
-// =============================================================================
-// Factory functions
-// =============================================================================
+// ── Factory functions ─────────────────────────────────────────────
 
-/** 返回 MDAST 插件，注册到 `mdastPlugins` */
 export function mermaidMdast(options?: MermaidPluginOptions): MdastPluginDefinition {
   return createMermaidMdastPlugin(options).plugin;
 }
 
-/** 返回 HAST 插件，注册到 `hastPlugins` */
 export function mermaidHast(options?: MermaidPluginOptions): HastPluginDefinition {
   return createMermaidHastPlugin(options).plugin;
 }
 
-// =============================================================================
-// Legacy exports (backward compatibility)
-// =============================================================================
+// ── Legacy exports ────────────────────────────────────────────────
 
 const legacyMdast = createMermaidMdastPlugin();
 
-/**
- * @deprecated 使用 `mermaidMdast()` + `mermaidHast()` 分别注册。
- *             仅返回 MDAST 插件，无法防止 Sätteri 破坏 mermaid 代码。
- */
+/** @deprecated 使用 `mermaidMdast()` + `mermaidHast()` 分别注册 */
 export const mermaidPlugin = legacyMdast.plugin;
 export const popFlags = legacyMdast.popFlags;
 
