@@ -55,11 +55,7 @@ export default defineConfig({
 });
 ```
 
-添加自适应 CSS：
-
-```css
-.mermaid svg { max-width: 100%; height: auto; }
-```
+`responsive: true`（默认）自动添加自适应宽度——无需额外 CSS。
 
 传统客户端渲染：`mermaidHast({ ssg: false })` — 输出 `<pre class="mermaid">code</pre>` 供浏览器端 `mermaid.run()`。
 
@@ -68,6 +64,7 @@ export default defineConfig({
 | 选项 | 默认值 | 说明 |
 |--------|---------|------|
 | `ssg` | `true` | `true` = 构建时静态 SVG，`false` = 客户端 `mermaid.run()` |
+| `responsive` | `true` | 自动添加 `width:100%`，无需手写 CSS |
 | `langs` | `["mermaid"]` | 要匹配的代码块语言标识符 |
 
 ### `svgOptions` — 图表配色
@@ -83,6 +80,15 @@ export default defineConfig({
 | `muted` | — | 边标签、次要文字 |
 | `surface` | — | 节点填充 / 盒背景 |
 | `border` | — | 节点和分组边框 |
+
+### `svgOptions` — 布局
+
+| 选项 | 默认值 | 说明 |
+|--------|---------|------|
+| `font` | — | 字体（如 `"inherit"`） |
+| `padding` | `40` | 画布内边距（px） |
+| `nodeSpacing` | `24` | 节点水平间距（px） |
+| `layerSpacing` | `40` | 层级垂直间距（px） |
 
 ### `svgOptions` — 布局
 
@@ -125,12 +131,7 @@ HAST (ssg: false): 读取代码 → 还原为 <pre class="mermaid"> 供客户端
 
 3. 如果其他地方不再使用，从 `package.json` **删除** `mermaid` 依赖。
 
-4. 添加自适应 CSS：
-```css
-.mermaid svg { max-width: 100%; height: auto; }
-```
-
-5. 完成——图表现在在构建时渲染，零客户端 JS。
+4. 完成——图表在构建时渲染，自适应宽度内置，零客户端 JS。
 
 ## API
 
