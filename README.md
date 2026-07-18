@@ -47,7 +47,7 @@ export default defineConfig({
 
 ## Theme
 
-Merman provides 7 preset themes via the `theme` option:
+Merman provides 7 preset themes via the `theme` option, with optional `themeOverrides` for individual colors:
 
 | Preset | Appearance |
 |--------|------------|
@@ -60,10 +60,35 @@ Merman provides 7 preset themes via the `theme` option:
 | `"ayu-light"` | Ayu Light |
 
 ```js
-mermaidHast({ theme: "one-dark" })
+mermaidHast({
+  theme: "one-dark",
+  themeOverrides: {
+    border: "var(--border, #30363d)",
+    line: "var(--accent, #58a6ff)",
+    text: "var(--muted-text, #8b949e)",
+  },
+})
 ```
 
-> **Note:** Custom per-element colors (CSS variables in `themeOverrides`) are not supported by the current merman renderer. Use preset-based theme selection.
+All `themeOverrides` values support CSS variables. Available roles:
+
+| Role | Controls |
+|------|----------|
+| `canvas` | Canvas background |
+| `surface` | Node fill |
+| `text` | Primary text / labels |
+| `subtle_text` | Secondary text / edge labels |
+| `border` | Node & cluster borders |
+| `line` | Edge lines / connectors |
+| `note_background` | Note fill |
+| `note_text` | Note text |
+| `actor_background` | Sequence actor fill |
+| `actor_border` | Actor border |
+| `actor_text` | Actor label |
+| `cluster_background` | Subgraph background |
+| `cluster_border` | Subgraph border |
+| `activation_border` | Sequence activation bar border |
+| `error` / `warning` / `success` | Status colors |
 
 ## Options
 

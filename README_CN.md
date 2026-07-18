@@ -47,7 +47,7 @@ export default defineConfig({
 
 ## 主题
 
-通过 `theme` 选项选择 7 种预设主题：
+通过 `theme` 选择 7 种预设主题，可选 `themeOverrides` 覆盖个别颜色：
 
 | 预设 | 外观 |
 |--------|------------|
@@ -60,10 +60,35 @@ export default defineConfig({
 | `"ayu-light"` | Ayu Light |
 
 ```js
-mermaidHast({ theme: "one-dark" })
+mermaidHast({
+  theme: "one-dark",
+  themeOverrides: {
+    border: "var(--border, #30363d)",
+    line: "var(--accent, #58a6ff)",
+    text: "var(--muted-text, #8b949e)",
+  },
+})
 ```
 
-> **注意：** 当前 merman 渲染器不支持自定义逐元素颜色（CSS 变量传入 `themeOverrides`）。请使用预设主题。
+`themeOverrides` 支持 CSS 变量。可选角色：
+
+| 角色 | 控制元素 |
+|------|----------|
+| `canvas` | 画布背景 |
+| `surface` | 节点填充 |
+| `text` | 主文字 / 标签 |
+| `subtle_text` | 次要文字 / 边标签 |
+| `border` | 节点和分组边框 |
+| `line` | 连线 / 连接器 |
+| `note_background` | 注释填充 |
+| `note_text` | 注释文字 |
+| `actor_background` | 时序图参与者填充 |
+| `actor_border` | 参与者边框 |
+| `actor_text` | 参与者标签 |
+| `cluster_background` | 子图背景 |
+| `cluster_border` | 子图边框 |
+| `activation_border` | 激活条边框 |
+| `error` / `warning` / `success` | 状态颜色 |
 
 ## 选项
 
