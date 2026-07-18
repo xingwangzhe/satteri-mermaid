@@ -7,7 +7,7 @@
 
 ## 特性
 
-- **SSG SVG 渲染** — `ssg: true`（默认）通过 [`@mermanjs/web`](https://npm.im/@mermanjs/web)（Rust → WASM）在构建时渲染为静态内联 SVG。**无需客户端 `mermaid.js`。**
+- **SSG SVG 渲染** — 通过 [`@mermanjs/web`](https://npm.im/@mermanjs/web)（Rust → WASM）在构建时渲染为静态内联 SVG。**无需客户端 `mermaid.js`，零运行时开销。**
 - **24 种图表类型** — flowchart、sequence、class、state、gantt、pie、ER、gitgraph、mindmap、timeline、sankey 等，完整 mermaid 兼容。
 - **主题预设** — 7 种内置主题（`one-dark`、`editor-dark`、`gruvbox-dark` 等），选一个即可。
 - **自动响应式** — `responsive: true`（默认）自动移除固定宽高并添加 `width:100%`，无需额外 CSS。
@@ -36,7 +36,6 @@ export default defineConfig({
       mdastPlugins: [mermaidMdast()],
       hastPlugins: [
         mermaidHast({
-          ssg: true,              // 默认 true — 构建时静态 SVG
           responsive: true,       // 默认 true — 自动 width:100%
           theme: "one-dark",      // 主题预设
         }),
@@ -70,7 +69,6 @@ mermaidHast({ theme: "one-dark" })
 
 | 选项 | 类型 | 默认值 | 说明 |
 |--------|------|---------|------|
-| `ssg` | `boolean` | `true` | 构建时 SVG 渲染 |
 | `responsive` | `boolean` | `true` | SVG 自动 `width:100%;display:block` |
 | `theme` | `HostThemePreset` | `"editor-dark"` | 预设主题 |
 | `langs` | `string[]` | `["mermaid"]` | 匹配的代码块语言标识 |
@@ -108,12 +106,7 @@ bun remove beautiful-mermaid
 
 ```diff
   mermaidHast({
-    ssg: true,
--   svgOptions: {
--     bg: "var(--card-bg, #161b22)",
--     fg: "var(--muted-text, #8b949e)",
--     ...
--   },
+-   svgOptions: { ... },
 +   theme: "one-dark",
   }),
 ```

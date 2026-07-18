@@ -7,7 +7,7 @@
 
 ## Features
 
-- **SSG SVG rendering** — `ssg: true` (default) renders diagrams as static inline SVG at build time via [`@mermanjs/web`](https://npm.im/@mermanjs/web) (Rust → WASM). No client-side `mermaid.js` required.
+- **SSG SVG rendering** — renders diagrams as static inline SVG at build time via [`@mermanjs/web`](https://npm.im/@mermanjs/web) (Rust → WASM). No client-side `mermaid.js` required, no runtime overhead.
 - **24 diagram types** — flowchart, sequence, class, state, gantt, pie, ER, gitgraph, mindmap, timeline, sankey, and more. Full mermaid parity.
 - **Theme presets** — 7 built-in host themes (`one-dark`, `editor-dark`, `gruvbox-dark`, etc.). Pick one, done.
 - **Auto-responsive** — `responsive: true` (default) removes fixed SVG dimensions and adds `width:100%`. Zero extra CSS.
@@ -36,7 +36,6 @@ export default defineConfig({
       mdastPlugins: [mermaidMdast()],
       hastPlugins: [
         mermaidHast({
-          ssg: true,              // default: true — build-time static SVG
           responsive: true,       // default: true — auto width:100%
           theme: "one-dark",      // preset theme
         }),
@@ -70,7 +69,6 @@ mermaidHast({ theme: "one-dark" })
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `ssg` | `boolean` | `true` | Build-time SVG rendering |
 | `responsive` | `boolean` | `true` | Auto `width:100%;display:block` on SVG |
 | `theme` | `HostThemePreset` | `"editor-dark"` | Preset theme |
 | `langs` | `string[]` | `["mermaid"]` | Code block language identifiers |
@@ -108,12 +106,7 @@ bun remove beautiful-mermaid
 
 ```diff
   mermaidHast({
-    ssg: true,
--   svgOptions: {
--     bg: "var(--card-bg, #161b22)",
--     fg: "var(--muted-text, #8b949e)",
--     ...
--   },
+-   svgOptions: { ... },
 +   theme: "one-dark",
   }),
 ```
