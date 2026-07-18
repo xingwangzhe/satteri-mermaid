@@ -1,6 +1,6 @@
 {
   "name": "@xingwangzhe/satteri-mermaid",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Sätteri MDAST+HAST plugin: render Mermaid diagrams as static SVG at build time via merman (Rust WASM). 24 diagram types, zero client JS.",
   "keywords": [
     "astro",
