@@ -1,0 +1,14 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { getCollection, render } from "astro:content";
+
+const posts = await getCollection("posts");
+---
+
+<Layout>
+  <h1>satteri-mermaid Content Collection Test</h1>
+  {posts.map(async (post) => {
+    const { Content } = await render(post);
+    return <div><h2>{post.data.title}</h2><Content /></div>;
+  })}
+</Layout>

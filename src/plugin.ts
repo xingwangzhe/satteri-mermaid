@@ -152,6 +152,7 @@ export function createMermaidHastPlugin(options?: MermaidPluginOptions): {
   const plugin = defineHastPlugin({
     name: "satteri-mermaid-hast",
 
+    // 路径 A：MDAST 插件创建了 rawHtml 占位符（直接 .md 页面）
     raw(node, ctx: HastVisitorContext) {
       const match = node.value.match(/^<pre class="mermaid" data-mermaid-id="([^"]+)"><\/pre>$/);
       if (!match) return;
@@ -161,52 +162,70 @@ export function createMermaidHastPlugin(options?: MermaidPluginOptions): {
       const code = bag?.[id];
       if (!code) return;
 
-      if (ssg) {
-        // 构建时渲染为静态 SVG，bg/fg 支持 CSS 变量（如 var(--card-bg)）
-        try {
-          const svgRaw = renderMermaidSVG(code.trim(), {
-            bg: svgOpts?.bg ?? "var(--card-bg, #1a1b26)",
-            fg: svgOpts?.fg ?? "var(--muted-text, #a9b1d6)",
-            line: svgOpts?.line,
-            accent: svgOpts?.accent,
-            muted: svgOpts?.muted,
-            surface: svgOpts?.surface,
-            border: svgOpts?.border,
-            font: svgOpts?.font,
-            padding: svgOpts?.padding ?? 40,
-            nodeSpacing: svgOpts?.nodeSpacing,
-            layerSpacing: svgOpts?.layerSpacing,
-          });
-          // 去掉根 SVG 的固定宽高，让 viewBox 控制缩放
-          const svg = responsive
-            ? svgRaw
-                .replace(/\b(width|height)="[^"]*"/g, "")
-                .replace(/ style="([^"]+)"/, (_, inner) => ` style="width:100%;display:block;${inner}"`)
-            : svgRaw;
-          ctx.replaceNode(node, {
-            type: "raw",
-            value: `<div class="mermaid" data-mermaid-ssg="true" style="${wrapperStyle}">${svg}</div>`,
-          });
-        } catch {
-          // 渲染失败时回退为纯代码块
-          ctx.replaceNode(node, {
-            type: "element",
-            tagName: "pre",
-            properties: { className: ["mermaid"] },
-            children: [{ type: "text", value: code }],
-          });
-        }
-      } else {
-        // 传统模式：保留代码，运行时客户端渲染
-        ctx.replaceNode(node, {
-          type: "element",
-          tagName: "pre",
-          properties: { className: ["mermaid"] },
-          children: [{ type: "text", value: code }],
-        });
-      }
+      replaceWithSVG(node, code, ctx);
+    },
+
+    // 路径 B：内容集合渲染的普通代码块 <pre><code class="language-mermaid">
+    element: {
+      filter: ["pre"],
+      visit(node, ctx) {
+        const codeEl = node.children?.[0];
+        if (!codeEl || codeEl.type !== "element" || codeEl.tagName !== "code") return;
+        const cls = codeEl.properties?.className;
+        if (!Array.isArray(cls) || !cls.includes("language-mermaid")) return;
+        const text = (codeEl.children?.[0] as any)?.value;
+        if (!text) return;
+
+        replaceWithSVG(node, text, ctx);
+      },
     },
   });
+
+  function replaceWithSVG(node: any, code: string, ctx: any) {
+    if (!ssg) {
+      // 传统模式：保留代码，运行时客户端渲染
+      ctx.replaceNode(node, {
+        type: "element",
+        tagName: "pre",
+        properties: { className: ["mermaid"] },
+        children: [{ type: "text", value: code }],
+      });
+      return;
+    }
+    // SSG：构建时渲染为静态 SVG
+    try {
+      const svgRaw = renderMermaidSVG(code.trim(), {
+        bg: svgOpts?.bg ?? "var(--card-bg, #1a1b26)",
+        fg: svgOpts?.fg ?? "var(--muted-text, #a9b1d6)",
+        line: svgOpts?.line,
+        accent: svgOpts?.accent,
+        muted: svgOpts?.muted,
+        surface: svgOpts?.surface,
+        border: svgOpts?.border,
+        font: svgOpts?.font,
+        padding: svgOpts?.padding ?? 40,
+        nodeSpacing: svgOpts?.nodeSpacing,
+        layerSpacing: svgOpts?.layerSpacing,
+      });
+      const svg = responsive
+        ? svgRaw
+            .replace(/\b(width|height)="[^"]*"/g, "")
+            .replace(/ style="([^"]+)"/, (_, inner) => ` style="width:100%;display:block;${inner}"`)
+        : svgRaw;
+      ctx.replaceNode(node, {
+        type: "raw",
+        value: `<div class="mermaid" data-mermaid-ssg="true" style="${wrapperStyle}">${svg}</div>`,
+      });
+    } catch {
+      // 渲染失败时回退为纯代码块
+      ctx.replaceNode(node, {
+        type: "element",
+        tagName: "pre",
+        properties: { className: ["mermaid"] },
+        children: [{ type: "text", value: code }],
+      });
+    }
+  }
 
   return { plugin };
 }
