@@ -152,20 +152,42 @@ export function createMermaidHastPlugin(options?: MermaidPluginOptions): {
   const plugin = defineHastPlugin({
     name: "satteri-mermaid-hast",
 
-    // 路径 A：MDAST 插件创建了 rawHtml 占位符（直接 .md 页面）
-    raw(node, ctx: HastVisitorContext) {
-      const match = node.value.match(/^<pre class="mermaid" data-mermaid-id="([^"]+)"><\/pre>$/);
-      if (!match) return;
+    // 路径 A：raw 节点 — 处理被语法高亮插件转换后的 <pre class="mermaid"> 占位符
+    // MDAST 阶段通过 rawHtml 输出的 <pre class="mermaid" data-mermaid-id="xxx"></pre>
+    // 以 HAST raw 节点进入管线。语法高亮插件可能将其包裹为带 <code> 的格式。
+    raw(node, ctx) {
+      // 匹配 <pre class="mermaid" ...> ... </pre>
+      const preMatch = node.value.match(
+        /<pre\s[^>]*\bclass="mermaid"[^>]*>([\s\S]*?)<\/pre>/i,
+      );
+      if (!preMatch) return;
 
-      const id = match[1];
-      const bag = ctx.data[DATA_KEY] as Record<string, string> | undefined;
-      const code = bag?.[id];
+      let code: string | undefined;
+
+      // 优先从 data-mermaid-id 读取 MDAST 阶段存储的原始代码（未经高亮污染）
+      const idMatch = node.value.match(/data-mermaid-id="([^"]*)"/);
+      if (idMatch) {
+        const bag = ctx.data?.[DATA_KEY] as Record<string, string> | undefined;
+        code = bag?.[idMatch[1]];
+      }
+
+      // 回退：高亮后 innerHTML 中含 <code><span>…</span></code>，剥离标签取纯文本
+      if (!code) {
+        const inner = preMatch[1];
+        if (!inner.trim()) return; // 空占位符且 ctx.data 中无对应代码 → 跳过
+        code = inner
+          .replace(/<[^>]*>/g, "")       // 去掉高亮 span/code 标签
+          .replace(/&lt;/g, "<")
+          .replace(/&gt;/g, ">")
+          .replace(/&amp;/g, "&")
+          .trim();
+      }
+
       if (!code) return;
-
       replaceWithSVG(node, code, ctx);
     },
 
-    // 路径 B：内容集合渲染为 <pre class="mermaid">code</pre>，直接匹配 className
+    // 路径 B：element 节点 — <pre class="mermaid">code</pre>，直接匹配 className
     element: {
       filter: ["pre"],
       visit(node, ctx) {
