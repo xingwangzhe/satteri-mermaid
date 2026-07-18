@@ -39,8 +39,8 @@ export default defineConfig({
       hastPlugins: [
         photoswipe(),
         mermaidHast({
-          ssg: true,                                // 构建时静态 SVG
-          responsive: true,                         // 自适应宽度（默认）
+          ssg: true,                                // 默认 true — 构建时静态 SVG
+          responsive: true,                         // 默认 true — 自适应宽度
           svgOptions: {
             bg: "var(--card-bg, #1a1b26)",          // CSS 变量跟随主题
             fg: "var(--muted-text, #a9b1d6)",
