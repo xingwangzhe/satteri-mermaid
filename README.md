@@ -15,7 +15,7 @@
 ## Install
 
 ```bash
-bun add -D @xingwangzhe/satteri-mermaid beautiful-mermaid
+bun add -D @xingwangzhe/satteri-mermaid
 ```
 
 Requires `satteri >= 0.8.0`. `mermaid` is **not needed** when using `ssg: true`.
