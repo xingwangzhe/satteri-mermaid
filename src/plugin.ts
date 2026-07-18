@@ -165,17 +165,14 @@ export function createMermaidHastPlugin(options?: MermaidPluginOptions): {
       replaceWithSVG(node, code, ctx);
     },
 
-    // 路径 B：内容集合渲染的普通代码块 <pre><code class="language-mermaid">
+    // 路径 B：内容集合渲染为 <pre class="mermaid">code</pre>，直接匹配 className
     element: {
       filter: ["pre"],
       visit(node, ctx) {
-        const codeEl = node.children?.[0];
-        if (!codeEl || codeEl.type !== "element" || codeEl.tagName !== "code") return;
-        const cls = codeEl.properties?.className;
-        if (!Array.isArray(cls) || !cls.includes("language-mermaid")) return;
-        const text = (codeEl.children?.[0] as any)?.value;
+        const cls = node.properties?.className;
+        if (!Array.isArray(cls) || !cls.includes("mermaid")) return;
+        const text = (node.children?.[0] as any)?.value;
         if (!text) return;
-
         replaceWithSVG(node, text, ctx);
       },
     },
