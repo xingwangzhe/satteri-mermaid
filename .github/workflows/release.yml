@@ -81,16 +81,17 @@ jobs:
           path: .
           merge-multiple: true
 
-      - name: Verify native binaries
+      # 构建 JS 层（vite + tsc）
+      - name: Build JS layer
+        run: bun run build:vite && bun run build:tsc
+
+      # 验证所有文件就绪
+      - name: Verify final package
         run: |
           echo "=== Native binaries ==="
           ls -la *.node
           echo "=== dist ==="
           ls -la dist/
-
-      # 构建 JS 层（vite + tsc）
-      - name: Build JS layer
-        run: bun run build:vite && bun run build:tsc
 
       # npm 发布
       - uses: actions/setup-node@v7
