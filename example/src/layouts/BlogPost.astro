@@ -1,0 +1,38 @@
+---
+import Layout from './Layout.astro';
+import type { CollectionEntry } from 'astro:content';
+
+export interface Props {
+	post: CollectionEntry<'posts'>;
+}
+
+const { post } = Astro.props;
+const { title, description, pubDate, tags } = post.data;
+---
+
+<Layout title={title} description={description}>
+	<a href="/" class="back-link">← 返回首页</a>
+	<article>
+		<header>
+			<h1>{title}</h1>
+			<p style="color: #9ca3af; font-size: 0.9rem; margin-bottom: 0.8em;">
+				{new Date(pubDate).toLocaleDateString('zh-CN', {
+					year: 'numeric',
+					month: 'long',
+					day: 'numeric',
+				})}
+			</p>
+			{
+				tags && tags.length > 0 && (
+					<div class="tags">
+						{tags.map(tag => <span class="tag">{tag}</span>)}
+					</div>
+				)
+			}
+		</header>
+		<hr />
+		<div class="post-content">
+			<slot />
+		</div>
+	</article>
+</Layout>

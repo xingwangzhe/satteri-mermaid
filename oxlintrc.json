@@ -1,0 +1,6 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["oxc"],
+  "ignorePatterns": ["node_modules/**", "dist/**", "example/**"],
+  "rules": {}
+}

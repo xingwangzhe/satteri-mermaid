@@ -1,0 +1,85 @@
+{
+  "name": "@xingwangzhe/satteri-mermaid",
+  "version": "0.6.0",
+  "description": "Sätteri MDAST+HAST plugin: render Mermaid diagrams as static SVG at build time via mermaid-rs (napi-rs). 23 diagram types, zero client JS.",
+  "keywords": [
+    "astro",
+    "astro-component",
+    "diagram",
+    "markdown",
+    "mdast",
+    "mermaid",
+    "plugin",
+    "satteri"
+  ],
+  "homepage": "https://github.com/xingwangzhe/satteri-mermaid#readme",
+  "license": "MIT",
+  "author": "xingwangzhe",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xingwangzhe/satteri-mermaid"
+  },
+  "files": [
+    "dist",
+    "*.node",
+    "index.cjs",
+    "index.d.ts",
+    "package.json"
+  ],
+  "type": "module",
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "napi": {
+    "binaryName": "mermaid-rs",
+    "targets": [
+      "x86_64-pc-windows-msvc",
+      "x86_64-apple-darwin",
+      "x86_64-unknown-linux-gnu",
+      "aarch64-unknown-linux-gnu",
+      "aarch64-apple-darwin"
+    ]
+  },
+  "engines": {
+    "node": ">= 18.17.0"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  },
+  "scripts": {
+    "dev": "cd example && bun run dev",
+    "build:napi": "napi build --platform --release --no-js",
+    "build:vite": "vite build",
+    "build:tsc": "tsc --emitDeclarationOnly --declarationDir dist",
+    "build": "bun run build:napi && bun run build:vite && bun run build:tsc",
+    "build:debug": "napi build --platform --no-js && vite build && tsc --emitDeclarationOnly --declarationDir dist",
+    "build:example": "cd example && bun run build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check",
+    "lint": "oxlint src test",
+    "lint:fix": "oxlint --fix src test",
+    "prepublishOnly": "bun run build"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.1",
+    "oxfmt": "^0.59.0",
+    "oxlint": "^1.74.0",
+    "satteri": "^0.9.5",
+    "typescript": "^7.0.2",
+    "vite": "^8.1.5",
+    "vitest": "^4.1.10"
+  },
+  "peerDependencies": {
+    "satteri": ">=0.8.0"
+  }
+}

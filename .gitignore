@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Build output (CI builds these)
+dist/
+*.node
+
+# Rust
+target/
+Cargo.lock
+
+# bun
+bun.toml
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Misc
+*.tgz
+.cargo/

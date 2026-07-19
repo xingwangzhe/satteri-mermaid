@@ -1,0 +1,15 @@
+src/
+test/
+example/
+node_modules/
+target/
+.gitignore
+tsconfig.json
+vite.config.ts
+oxlintrc.json
+.oxlintignore
+Cargo.toml
+Cargo.lock
+build.rs
+rustfmt.toml
+.github/

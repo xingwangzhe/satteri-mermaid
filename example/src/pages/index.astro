@@ -1,0 +1,48 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+const posts = await getCollection('posts');
+// Sort by publish date, newest first
+posts.sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
+---
+
+<Layout title="Sätteri Mermaid 测试博客" description="展示 @xingwangzhe/satteri-mermaid 的各种 Mermaid 图表渲染效果">
+	<h2 style="border-bottom: none; margin-top: 0;">📝 文章列表</h2>
+	<ul class="post-list">
+		{posts.map(post => (
+			<li class="post-item">
+				<h2><a href={`/posts/${post.id}/`}>{post.data.title}</a></h2>
+				<p class="post-date">
+					{new Date(post.data.pubDate).toLocaleDateString('zh-CN', {
+						year: 'numeric', month: 'long', day: 'numeric',
+					})}
+				</p>
+				<p class="post-desc">{post.data.description}</p>
+				{post.data.tags.length > 0 && (
+					<div class="tags">
+						{post.data.tags.map(tag => <span class="tag">{tag}</span>)}
+					</div>
+				)}
+			</li>
+		))}
+	</ul>
+
+	<hr />
+
+	<section>
+		<h2>🎨 实时预览：Mermaid 流程图</h2>
+		<p>下面是一个直接在页面 Markdown 中渲染的 Mermaid 流程图：</p>
+
+```mermaid
+flowchart LR
+    A[Sätteri] -->|MDAST Plugin| B[检测代码块]
+    B --> C[mermaid-rs 渲染]
+    C --> D[静态 SVG]
+    D --> E[零 JS 输出]
+    E -->|HAST Plugin| F[最终 HTML]
+```
+
+		<p>✨ 上图在 <code>astro build</code> 时已渲染为静态内联 SVG，无需任何客户端 JavaScript。</p>
+	</section>
+</Layout>

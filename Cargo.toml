@@ -1,0 +1,24 @@
+
+[package]
+authors = ["xingwangzhe"]
+edition = "2021"
+name = "mermaid-rs"
+version = "0.1.0"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+napi-derive = "3.0.0"
+mermaid-rs-renderer = "0.3.1"
+
+[dependencies.napi]
+version = "3.0.0"
+features = ["napi10"]
+
+[build-dependencies]
+napi-build = "2"
+
+[profile.release]
+lto = true
+strip = "symbols"

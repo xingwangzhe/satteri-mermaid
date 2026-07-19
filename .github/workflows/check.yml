@@ -1,0 +1,56 @@
+name: Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    name: Lint & Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          components: clippy, rustfmt
+
+      - run: bun install --frozen-lockfile
+
+      - name: Run oxlint (JS/TS)
+        run: bun run lint
+
+      - name: Check formatting (oxfmt)
+        run: bun run fmt:check
+
+      - name: Cargo fmt (Rust)
+        run: cargo fmt -- --check
+
+      - name: Clippy (Rust)
+        run: cargo clippy
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - run: bun install --frozen-lockfile
+
+      - name: Build napi (debug)
+        run: bun run build:debug
+
+      - name: Run tests (vitest)
+        run: bun run test
