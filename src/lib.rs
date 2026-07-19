@@ -1,6 +1,6 @@
 #![deny(clippy::all)]
 
-use mermaid_rs_renderer::{RenderOptions as MrRenderOptions, Theme, render_with_options};
+use mermaid_rs_renderer::{render_with_options, RenderOptions as MrRenderOptions, Theme};
 use napi_derive::napi;
 
 #[napi(object)]
@@ -160,8 +160,12 @@ fn build_render_options(opts: &Option<RenderOptions>) -> MrRenderOptions {
   }
 
   // ── typography ─────────────────────────────────────────────────
-  if let Some(ref v) = opts.font_family { mr_opts.theme.font_family = v.clone(); }
-  if let Some(v) = opts.font_size { mr_opts.theme.font_size = v as f32; }
+  if let Some(ref v) = opts.font_family {
+    mr_opts.theme.font_family = v.clone();
+  }
+  if let Some(v) = opts.font_size {
+    mr_opts.theme.font_size = v as f32;
+  }
 
   // ── theme colors ────────────────────────────────────────────────
   macro_rules! apply_theme {
@@ -266,23 +270,53 @@ fn build_render_options(opts: &Option<RenderOptions>) -> MrRenderOptions {
   apply_pie!(10, pie11);
   apply_pie!(11, pie12);
 
-  if let Some(v) = opts.pie_title_text_size { mr_opts.theme.pie_title_text_size = v as f32; }
-  if let Some(ref v) = opts.pie_title_text_color { mr_opts.theme.pie_title_text_color = v.clone(); }
-  if let Some(v) = opts.pie_section_text_size { mr_opts.theme.pie_section_text_size = v as f32; }
-  if let Some(ref v) = opts.pie_section_text_color { mr_opts.theme.pie_section_text_color = v.clone(); }
-  if let Some(v) = opts.pie_legend_text_size { mr_opts.theme.pie_legend_text_size = v as f32; }
-  if let Some(ref v) = opts.pie_legend_text_color { mr_opts.theme.pie_legend_text_color = v.clone(); }
-  if let Some(ref v) = opts.pie_stroke_color { mr_opts.theme.pie_stroke_color = v.clone(); }
-  if let Some(v) = opts.pie_stroke_width { mr_opts.theme.pie_stroke_width = v as f32; }
-  if let Some(v) = opts.pie_outer_stroke_width { mr_opts.theme.pie_outer_stroke_width = v as f32; }
-  if let Some(ref v) = opts.pie_outer_stroke_color { mr_opts.theme.pie_outer_stroke_color = v.clone(); }
-  if let Some(v) = opts.pie_opacity { mr_opts.theme.pie_opacity = v as f32; }
+  if let Some(v) = opts.pie_title_text_size {
+    mr_opts.theme.pie_title_text_size = v as f32;
+  }
+  if let Some(ref v) = opts.pie_title_text_color {
+    mr_opts.theme.pie_title_text_color = v.clone();
+  }
+  if let Some(v) = opts.pie_section_text_size {
+    mr_opts.theme.pie_section_text_size = v as f32;
+  }
+  if let Some(ref v) = opts.pie_section_text_color {
+    mr_opts.theme.pie_section_text_color = v.clone();
+  }
+  if let Some(v) = opts.pie_legend_text_size {
+    mr_opts.theme.pie_legend_text_size = v as f32;
+  }
+  if let Some(ref v) = opts.pie_legend_text_color {
+    mr_opts.theme.pie_legend_text_color = v.clone();
+  }
+  if let Some(ref v) = opts.pie_stroke_color {
+    mr_opts.theme.pie_stroke_color = v.clone();
+  }
+  if let Some(v) = opts.pie_stroke_width {
+    mr_opts.theme.pie_stroke_width = v as f32;
+  }
+  if let Some(v) = opts.pie_outer_stroke_width {
+    mr_opts.theme.pie_outer_stroke_width = v as f32;
+  }
+  if let Some(ref v) = opts.pie_outer_stroke_color {
+    mr_opts.theme.pie_outer_stroke_color = v.clone();
+  }
+  if let Some(v) = opts.pie_opacity {
+    mr_opts.theme.pie_opacity = v as f32;
+  }
 
   // ── layout ─────────────────────────────────────────────────────
-  if let Some(v) = opts.node_spacing { mr_opts.layout.node_spacing = v as f32; }
-  if let Some(v) = opts.rank_spacing { mr_opts.layout.rank_spacing = v as f32; }
-  if let Some(v) = opts.preferred_aspect_ratio { mr_opts.layout.preferred_aspect_ratio = Some(v as f32); }
-  if let Some(v) = opts.fast_text_metrics { mr_opts.layout.fast_text_metrics = v; }
+  if let Some(v) = opts.node_spacing {
+    mr_opts.layout.node_spacing = v as f32;
+  }
+  if let Some(v) = opts.rank_spacing {
+    mr_opts.layout.rank_spacing = v as f32;
+  }
+  if let Some(v) = opts.preferred_aspect_ratio {
+    mr_opts.layout.preferred_aspect_ratio = Some(v as f32);
+  }
+  if let Some(v) = opts.fast_text_metrics {
+    mr_opts.layout.fast_text_metrics = v;
+  }
 
   mr_opts
 }
