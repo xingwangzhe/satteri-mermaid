@@ -3,14 +3,14 @@
   "version": "0.7.1",
   "description": "Sätteri MDAST+HAST plugin: render Mermaid diagrams as static SVG at build time via mermaid-rs (napi-rs). 23 diagram types, zero client JS.",
   "keywords": [
-    "astro-integration",
     "astro-component",
-    "renderer",
+    "astro-integration",
     "diagram",
     "markdown",
     "mdast",
     "mermaid",
     "plugin",
+    "renderer",
     "satteri"
   ],
   "homepage": "https://github.com/xingwangzhe/satteri-mermaid#readme",
