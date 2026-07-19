@@ -14,9 +14,4 @@ export {
   popFlags,
 } from "./plugin";
 
-export type {
-  MermaidFlags,
-  MermaidPluginOptions,
-  ThemeOverrides,
-  ThemePreset,
-} from "./plugin";
+export type { MermaidFlags, MermaidPluginOptions, ThemeOverrides, ThemePreset } from "./plugin";

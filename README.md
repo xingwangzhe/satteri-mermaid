@@ -67,26 +67,26 @@ export default defineConfig({
       hastPlugins: [
         mermaidHast({
           // ── Render mode ─────────────────────────────────────
-          ssg: true,           // true = build-time SVG rendering (default)
-                               // false = emit <pre class="mermaid"> for client-side
+          ssg: true, // true = build-time SVG rendering (default)
+          // false = emit <pre class="mermaid"> for client-side
 
           // ── Responsive ──────────────────────────────────────
-          responsive: true,    // auto-remove width/height, add width:100%
+          responsive: true, // auto-remove width/height, add width:100%
 
           // ── Theme ───────────────────────────────────────────
-          theme: "dark",       // "modern" | "dark" | "default" | "forest" | "neutral"
+          theme: "dark", // "modern" | "dark" | "default" | "forest" | "neutral"
 
           // ── Typography ──────────────────────────────────────
           font: "Fira Code, monospace",
           fontSize: 14,
 
           // ── Layout ──────────────────────────────────────────
-          nodeSpacing: 60,     // vertical spacing between nodes (px)
-          rankSpacing: 80,     // horizontal spacing between ranks (px)
-          preferredAspectRatio: 1.778,  // 16:9 aspect ratio
+          nodeSpacing: 60, // vertical spacing between nodes (px)
+          rankSpacing: 80, // horizontal spacing between ranks (px)
+          preferredAspectRatio: 1.778, // 16:9 aspect ratio
 
           // ── Render options ──────────────────────────────────
-          fastTextMetrics: false,  // use approximate text widths for speed
+          fastTextMetrics: false, // use approximate text widths for speed
 
           // ── Theme color overrides (all support CSS variables) ─
           themeOverrides: {
@@ -121,14 +121,20 @@ export default defineConfig({
             sequenceActivationBorder: "#34d399",
 
             // Git graph — branch colors (8 slots)
-            git0: "#ff0000",  git1: "#00ff00",
-            git2: "#0000ff",  git3: "#ffff00",
-            git4: "#ff00ff",  git5: "#00ffff",
-            git6: "#800000",  git7: "#008000",
+            git0: "#ff0000",
+            git1: "#00ff00",
+            git2: "#0000ff",
+            git3: "#ffff00",
+            git4: "#ff00ff",
+            git5: "#00ffff",
+            git6: "#800000",
+            git7: "#008000",
             // Git — inverse colors
-            gitInv0: "#800000", gitInv1: "#008000",
+            gitInv0: "#800000",
+            gitInv1: "#008000",
             // Git — branch label colors
-            gitBranchLabel0: "white", gitBranchLabel1: "black",
+            gitBranchLabel0: "white",
+            gitBranchLabel1: "black",
             // Git — commit / tag labels
             gitCommitLabelColor: "#333",
             gitCommitLabelBackground: "#eee",
@@ -137,10 +143,18 @@ export default defineConfig({
             gitTagLabelBorder: "#999",
 
             // Pie chart — 12-slice palette
-            pie1: "#ff0000", pie2: "#00ff00", pie3: "#0000ff",
-            pie4: "#ffff00", pie5: "#ff00ff", pie6: "#00ffff",
-            pie7: "#800000", pie8: "#008000", pie9: "#000080",
-            pie10: "#808000", pie11: "#800080", pie12: "#008080",
+            pie1: "#ff0000",
+            pie2: "#00ff00",
+            pie3: "#0000ff",
+            pie4: "#ffff00",
+            pie5: "#ff00ff",
+            pie6: "#00ffff",
+            pie7: "#800000",
+            pie8: "#008000",
+            pie9: "#000080",
+            pie10: "#808000",
+            pie11: "#800080",
+            pie12: "#008080",
             // Pie — styling
             pieTitleTextSize: 25,
             pieTitleTextColor: "#333",
@@ -169,7 +183,7 @@ export default defineConfig({
 
 ```js
 // Build-time rendering — zero client JS
-mermaidHast({ ssg: true })
+mermaidHast({ ssg: true });
 ```
 
 All ` ```mermaid ` blocks are replaced with inline `<svg>` at `astro build`:
@@ -184,14 +198,14 @@ All ` ```mermaid ` blocks are replaced with inline `<svg>` at `astro build`:
 
 ```js
 // Preserve raw code blocks for client-side mermaid.js
-mermaidHast({ ssg: false })
+mermaidHast({ ssg: false });
 ```
 
 Emits `<pre class="mermaid">code</pre>`. Include mermaid.js in your HTML:
 
 ```html
 <script type="module">
-  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
   mermaid.initialize({ startOnLoad: true });
 </script>
 ```
@@ -200,13 +214,13 @@ Emits `<pre class="mermaid">code</pre>`. Include mermaid.js in your HTML:
 
 5 built-in presets via the `theme` option:
 
-| Preset | Appearance |
-|---|---|
-| `"modern"` | Clean slate palette (default) — Inter, 14px |
-| `"dark"` | Dark background, light elements |
-| `"default"` | Classic Mermaid theme |
-| `"forest"` | Green-based |
-| `"neutral"` | Greyscale |
+| Preset      | Appearance                                  |
+| ----------- | ------------------------------------------- |
+| `"modern"`  | Clean slate palette (default) — Inter, 14px |
+| `"dark"`    | Dark background, light elements             |
+| `"default"` | Classic Mermaid theme                       |
+| `"forest"`  | Green-based                                 |
+| `"neutral"` | Greyscale                                   |
 
 ```js
 mermaidHast({
@@ -217,82 +231,82 @@ mermaidHast({
     lineColor: "var(--accent, #58a6ff)",
     primaryTextColor: "var(--muted-text, #8b949e)",
   },
-})
+});
 ```
 
 ## Options Reference
 
 ### MermaidPluginOptions
 
-| Option | Type | Default | Description |
-|---|---|---|---|
-| `langs` | `string[]` | `["mermaid"]` | Code block language identifiers |
-| `ssg` | `boolean` | `true` | Build-time SVG rendering |
-| `responsive` | `boolean` | `true` | Auto `width:100%;display:block` on SVG |
-| `theme` | `ThemePreset` | `"modern"` | Preset theme |
-| `font` | `string` | — | Font family for diagram text |
-| `fontSize` | `number` | — | Font size in px |
-| `nodeSpacing` | `number` | — | Vertical spacing between nodes (px) |
-| `rankSpacing` | `number` | — | Horizontal spacing between ranks (px) |
-| `preferredAspectRatio` | `number` | — | Target aspect ratio (e.g. 1.778 = 16:9) |
-| `fastTextMetrics` | `boolean` | `false` | Use approximate text widths for faster rendering |
-| `themeOverrides` | `ThemeOverrides` | — | Per-field color and style overrides (CSS var support) |
+| Option                 | Type             | Default       | Description                                           |
+| ---------------------- | ---------------- | ------------- | ----------------------------------------------------- |
+| `langs`                | `string[]`       | `["mermaid"]` | Code block language identifiers                       |
+| `ssg`                  | `boolean`        | `true`        | Build-time SVG rendering                              |
+| `responsive`           | `boolean`        | `true`        | Auto `width:100%;display:block` on SVG                |
+| `theme`                | `ThemePreset`    | `"modern"`    | Preset theme                                          |
+| `font`                 | `string`         | —             | Font family for diagram text                          |
+| `fontSize`             | `number`         | —             | Font size in px                                       |
+| `nodeSpacing`          | `number`         | —             | Vertical spacing between nodes (px)                   |
+| `rankSpacing`          | `number`         | —             | Horizontal spacing between ranks (px)                 |
+| `preferredAspectRatio` | `number`         | —             | Target aspect ratio (e.g. 1.778 = 16:9)               |
+| `fastTextMetrics`      | `boolean`        | `false`       | Use approximate text widths for faster rendering      |
+| `themeOverrides`       | `ThemeOverrides` | —             | Per-field color and style overrides (CSS var support) |
 
 ### ThemeOverrides — Node & Edge Colors
 
-| Field | Controls |
-|---|---|
-| `background` | Canvas background |
-| `primaryColor` | Node fill |
-| `secondaryColor` | Alt surface fill |
-| `tertiaryColor` | Muted surface fill |
-| `primaryTextColor` | Primary text / labels |
-| `textColor` | Secondary text / edge labels |
-| `primaryBorderColor` | Node & cluster borders |
-| `lineColor` | Edge lines / connectors |
-| `edgeLabelBackground` | Edge label background |
-| `clusterBackground` | Subgraph background |
-| `clusterBorder` | Subgraph border |
+| Field                 | Controls                     |
+| --------------------- | ---------------------------- |
+| `background`          | Canvas background            |
+| `primaryColor`        | Node fill                    |
+| `secondaryColor`      | Alt surface fill             |
+| `tertiaryColor`       | Muted surface fill           |
+| `primaryTextColor`    | Primary text / labels        |
+| `textColor`           | Secondary text / edge labels |
+| `primaryBorderColor`  | Node & cluster borders       |
+| `lineColor`           | Edge lines / connectors      |
+| `edgeLabelBackground` | Edge label background        |
+| `clusterBackground`   | Subgraph background          |
+| `clusterBorder`       | Subgraph border              |
 
 ### ThemeOverrides — Sequence Diagram
 
-| Field | Controls |
-|---|---|
-| `sequenceActorFill` | Actor fill |
-| `sequenceActorBorder` | Actor border |
-| `sequenceActorLine` | Actor lifeline |
-| `sequenceNoteFill` | Note fill |
-| `sequenceNoteBorder` | Note border |
-| `sequenceActivationFill` | Activation bar fill |
+| Field                      | Controls              |
+| -------------------------- | --------------------- |
+| `sequenceActorFill`        | Actor fill            |
+| `sequenceActorBorder`      | Actor border          |
+| `sequenceActorLine`        | Actor lifeline        |
+| `sequenceNoteFill`         | Note fill             |
+| `sequenceNoteBorder`       | Note border           |
+| `sequenceActivationFill`   | Activation bar fill   |
 | `sequenceActivationBorder` | Activation bar border |
 
 ### ThemeOverrides — Git Graph (8 slots each)
 
-| Slots | Field pattern |
-|---|---|
-| Branch colors | `git0` … `git7` |
-| Inverse colors | `gitInv0` … `gitInv7` |
-| Branch label colors | `gitBranchLabel0` … `gitBranchLabel7` |
-| Commit label | `gitCommitLabelColor`, `gitCommitLabelBackground` |
-| Tag label | `gitTagLabelColor`, `gitTagLabelBackground`, `gitTagLabelBorder` |
+| Slots               | Field pattern                                                    |
+| ------------------- | ---------------------------------------------------------------- |
+| Branch colors       | `git0` … `git7`                                                  |
+| Inverse colors      | `gitInv0` … `gitInv7`                                            |
+| Branch label colors | `gitBranchLabel0` … `gitBranchLabel7`                            |
+| Commit label        | `gitCommitLabelColor`, `gitCommitLabelBackground`                |
+| Tag label           | `gitTagLabelColor`, `gitTagLabelBackground`, `gitTagLabelBorder` |
 
 ### ThemeOverrides — Pie Chart
 
-| Slots / style | Field |
-|---|---|
-| 12-slice palette | `pie1` … `pie12` |
-| Title | `pieTitleTextSize`, `pieTitleTextColor` |
-| Section labels | `pieSectionTextSize`, `pieSectionTextColor` |
-| Legend | `pieLegendTextSize`, `pieLegendTextColor` |
-| Strokes | `pieStrokeColor`, `pieStrokeWidth`, `pieOuterStrokeWidth`, `pieOuterStrokeColor` |
-| Opacity | `pieOpacity` |
+| Slots / style    | Field                                                                            |
+| ---------------- | -------------------------------------------------------------------------------- |
+| 12-slice palette | `pie1` … `pie12`                                                                 |
+| Title            | `pieTitleTextSize`, `pieTitleTextColor`                                          |
+| Section labels   | `pieSectionTextSize`, `pieSectionTextColor`                                      |
+| Legend           | `pieLegendTextSize`, `pieLegendTextColor`                                        |
+| Strokes          | `pieStrokeColor`, `pieStrokeWidth`, `pieOuterStrokeWidth`, `pieOuterStrokeColor` |
+| Opacity          | `pieOpacity`                                                                     |
 
 ### ThemeOverrides — Typography
 
-| Field | Controls |
-|---|---|
+| Field        | Controls           |
+| ------------ | ------------------ |
 | `fontFamily` | Font family string |
-| `fontSize` | Font size in px |
+| `fontSize`   | Font size in px    |
 
 ## Supported Diagram Types
 
@@ -310,21 +324,21 @@ Markdown code block → MDAST Plugin (store code, output placeholder)
 
 ## API
 
-| Export | Description |
-|---|---|
-| `mermaidMdast(options?)` | MDAST plugin — register in `mdastPlugins` |
-| `mermaidHast(options?)` | HAST plugin — register in `hastPlugins` |
-| `createMermaidMdastPlugin(options?)` | Factory: returns `{ plugin, popFlags }` |
-| `createMermaidHastPlugin(options?)` | Factory: returns `{ plugin }` |
-| `renderMermaidSVG(code, opts)` | Direct renderer access (low-level, all napi-rs parameters) |
+| Export                               | Description                                                |
+| ------------------------------------ | ---------------------------------------------------------- |
+| `mermaidMdast(options?)`             | MDAST plugin — register in `mdastPlugins`                  |
+| `mermaidHast(options?)`              | HAST plugin — register in `hastPlugins`                    |
+| `createMermaidMdastPlugin(options?)` | Factory: returns `{ plugin, popFlags }`                    |
+| `createMermaidHastPlugin(options?)`  | Factory: returns `{ plugin }`                              |
+| `renderMermaidSVG(code, opts)`       | Direct renderer access (low-level, all napi-rs parameters) |
 
 ## Platform Support
 
-| Platform | Arch |
-|---|---|
-| Linux | x64, arm64 |
-| macOS | x64, arm64 (Apple Silicon) |
-| Windows | x64 |
+| Platform | Arch                       |
+| -------- | -------------------------- |
+| Linux    | x64, arm64                 |
+| macOS    | x64, arm64 (Apple Silicon) |
+| Windows  | x64                        |
 
 ## License
 

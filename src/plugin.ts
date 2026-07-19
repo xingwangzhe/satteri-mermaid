@@ -192,17 +192,39 @@ export function createMermaidMdastPlugin(options?: MermaidPluginOptions): {
       flush();
     },
 
-    heading() { flush(); },
-    paragraph() { flush(); },
-    blockquote() { flush(); },
-    list() { flush(); },
-    table() { flush(); },
-    html() { flush(); },
-    thematicBreak() { flush(); },
-    math() { flush(); },
-    inlineMath() { flush(); },
-    image() { flush(); },
-    imageReference() { flush(); },
+    heading() {
+      flush();
+    },
+    paragraph() {
+      flush();
+    },
+    blockquote() {
+      flush();
+    },
+    list() {
+      flush();
+    },
+    table() {
+      flush();
+    },
+    html() {
+      flush();
+    },
+    thematicBreak() {
+      flush();
+    },
+    math() {
+      flush();
+    },
+    inlineMath() {
+      flush();
+    },
+    image() {
+      flush();
+    },
+    imageReference() {
+      flush();
+    },
   });
 
   const popFlags = (): MermaidFlags => {
@@ -344,9 +366,7 @@ export function createMermaidHastPlugin(options?: MermaidPluginOptions): {
 
     // 路径 A：raw 节点
     raw(node, ctx) {
-      const preMatch = node.value.match(
-        /<pre\s[^>]*\bclass="mermaid"[^>]*>([\s\S]*?)<\/pre>/i,
-      );
+      const preMatch = node.value.match(/<pre\s[^>]*\bclass="mermaid"[^>]*>([\s\S]*?)<\/pre>/i);
       if (!preMatch) return;
 
       let code: string | undefined;

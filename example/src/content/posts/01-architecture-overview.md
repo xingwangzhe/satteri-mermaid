@@ -9,7 +9,7 @@ tags: ["architecture", "satteri", "mermaid"]
 
 Sätteri Mermaid 采用 **MDAST + HAST 双插件架构**，确保在整个 Markdown 处理流水线中，Mermaid 代码块不会被其他插件破坏：
 
-```mermaid
+````mermaid
 flowchart TB
     subgraph Input["📥 输入层"]
         MD["Markdown 文件\n```mermaid\n...\n```"]
@@ -36,7 +36,7 @@ flowchart TB
     end
 
     MD --> P1 --> Store --> Other --> Note --> P2 --> Render --> SVG --> HTML
-```
+````
 
 ## 核心设计原则
 

@@ -324,7 +324,7 @@ describe("renderMermaidSVG — supported diagram types", () => {
     state: "stateDiagram-v2\n    [*] --> A",
     er: "erDiagram\n    CUSTOMER ||--o{ ORDER : places",
     gantt: "gantt\n    title Test\n    section S1\n    T1 :a1, 2026-01-01, 3d",
-    pie: "pie title Test\n    \"A\": 50",
+    pie: 'pie title Test\n    "A": 50',
     gitgraph: "gitGraph\n    commit",
     mindmap: "mindmap\n    root((Test))\n        A",
     timeline: "timeline\n    title Test\n    2024 : A",

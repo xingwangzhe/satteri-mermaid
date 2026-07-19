@@ -37,22 +37,9 @@
       "require": "./dist/index.cjs"
     }
   },
-  "napi": {
-    "binaryName": "mermaid-rs",
-    "targets": [
-      "x86_64-pc-windows-msvc",
-      "x86_64-apple-darwin",
-      "x86_64-unknown-linux-gnu",
-      "aarch64-unknown-linux-gnu",
-      "aarch64-apple-darwin"
-    ]
-  },
-  "engines": {
-    "node": ">= 18.17.0"
-  },
   "publishConfig": {
-    "registry": "https://registry.npmjs.org/",
-    "access": "public"
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
     "dev": "cd example && bun run dev",
@@ -71,6 +58,7 @@
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
+    "@napi-rs/cli": "^3.7.3",
     "@types/node": "^26.1.1",
     "oxfmt": "^0.59.0",
     "oxlint": "^1.74.0",
@@ -81,5 +69,18 @@
   },
   "peerDependencies": {
     "satteri": ">=0.8.0"
+  },
+  "napi": {
+    "binaryName": "mermaid-rs",
+    "targets": [
+      "x86_64-pc-windows-msvc",
+      "x86_64-apple-darwin",
+      "x86_64-unknown-linux-gnu",
+      "aarch64-unknown-linux-gnu",
+      "aarch64-apple-darwin"
+    ]
+  },
+  "engines": {
+    "node": ">= 18.17.0"
   }
 }

@@ -14,105 +14,105 @@ A-->B', {
    * })
    * ```
    */
-  export declare function render(code: string, opts?: RenderOptions | undefined | null): string
+export declare function render(code: string, opts?: RenderOptions | undefined | null): string;
 
 export interface RenderOptions {
   /** Theme preset: "dark" | "modern" | "default" | "forest" | "neutral" */
-  theme?: string
-  fontFamily?: string
-  fontSize?: number
+  theme?: string;
+  fontFamily?: string;
+  fontSize?: number;
   /** Node fill color (old: `surface`) */
-  primaryColor?: string
+  primaryColor?: string;
   /** Node border color (old: `border`) */
-  primaryBorderColor?: string
+  primaryBorderColor?: string;
   /** Primary label / text color (old: `text`) */
-  primaryTextColor?: string
+  primaryTextColor?: string;
   /** Edge / connector line color (old: `line`) */
-  lineColor?: string
+  lineColor?: string;
   /** Canvas background color (old: `canvas`) */
-  background?: string
+  background?: string;
   /** Alt surface fill (old: `surface_alt`) */
-  secondaryColor?: string
+  secondaryColor?: string;
   /** Muted surface fill (old: `surface_muted`) */
-  tertiaryColor?: string
+  tertiaryColor?: string;
   /** Secondary text / edge label color (old: `subtle_text`) */
-  textColor?: string
+  textColor?: string;
   /** Subgraph background (old: `cluster_background`) */
-  clusterBackground?: string
+  clusterBackground?: string;
   /** Subgraph border (old: `cluster_border`) */
-  clusterBorder?: string
+  clusterBorder?: string;
   /** Edge label background (old: `edge_label_background`) */
-  edgeLabelBackground?: string
+  edgeLabelBackground?: string;
   /** Sequence actor fill (old: `actor_background`) */
-  sequenceActorFill?: string
+  sequenceActorFill?: string;
   /** Sequence actor border (old: `actor_border`) */
-  sequenceActorBorder?: string
+  sequenceActorBorder?: string;
   /** Sequence actor line */
-  sequenceActorLine?: string
+  sequenceActorLine?: string;
   /** Sequence note fill (old: `note_background`) */
-  sequenceNoteFill?: string
+  sequenceNoteFill?: string;
   /** Sequence note border (old: `note_border`) */
-  sequenceNoteBorder?: string
+  sequenceNoteBorder?: string;
   /** Sequence activation fill (old: `activation_background`) */
-  sequenceActivationFill?: string
+  sequenceActivationFill?: string;
   /** Sequence activation border (old: `activation_border`) */
-  sequenceActivationBorder?: string
-  git0?: string
-  git1?: string
-  git2?: string
-  git3?: string
-  git4?: string
-  git5?: string
-  git6?: string
-  git7?: string
-  gitInv0?: string
-  gitInv1?: string
-  gitInv2?: string
-  gitInv3?: string
-  gitInv4?: string
-  gitInv5?: string
-  gitInv6?: string
-  gitInv7?: string
-  gitBranchLabel0?: string
-  gitBranchLabel1?: string
-  gitBranchLabel2?: string
-  gitBranchLabel3?: string
-  gitBranchLabel4?: string
-  gitBranchLabel5?: string
-  gitBranchLabel6?: string
-  gitBranchLabel7?: string
-  gitCommitLabelColor?: string
-  gitCommitLabelBackground?: string
-  gitTagLabelColor?: string
-  gitTagLabelBackground?: string
-  gitTagLabelBorder?: string
-  pie1?: string
-  pie2?: string
-  pie3?: string
-  pie4?: string
-  pie5?: string
-  pie6?: string
-  pie7?: string
-  pie8?: string
-  pie9?: string
-  pie10?: string
-  pie11?: string
-  pie12?: string
-  pieTitleTextSize?: number
-  pieTitleTextColor?: string
-  pieSectionTextSize?: number
-  pieSectionTextColor?: string
-  pieLegendTextSize?: number
-  pieLegendTextColor?: string
-  pieStrokeColor?: string
-  pieStrokeWidth?: number
-  pieOuterStrokeWidth?: number
-  pieOuterStrokeColor?: string
-  pieOpacity?: number
-  nodeSpacing?: number
-  rankSpacing?: number
+  sequenceActivationBorder?: string;
+  git0?: string;
+  git1?: string;
+  git2?: string;
+  git3?: string;
+  git4?: string;
+  git5?: string;
+  git6?: string;
+  git7?: string;
+  gitInv0?: string;
+  gitInv1?: string;
+  gitInv2?: string;
+  gitInv3?: string;
+  gitInv4?: string;
+  gitInv5?: string;
+  gitInv6?: string;
+  gitInv7?: string;
+  gitBranchLabel0?: string;
+  gitBranchLabel1?: string;
+  gitBranchLabel2?: string;
+  gitBranchLabel3?: string;
+  gitBranchLabel4?: string;
+  gitBranchLabel5?: string;
+  gitBranchLabel6?: string;
+  gitBranchLabel7?: string;
+  gitCommitLabelColor?: string;
+  gitCommitLabelBackground?: string;
+  gitTagLabelColor?: string;
+  gitTagLabelBackground?: string;
+  gitTagLabelBorder?: string;
+  pie1?: string;
+  pie2?: string;
+  pie3?: string;
+  pie4?: string;
+  pie5?: string;
+  pie6?: string;
+  pie7?: string;
+  pie8?: string;
+  pie9?: string;
+  pie10?: string;
+  pie11?: string;
+  pie12?: string;
+  pieTitleTextSize?: number;
+  pieTitleTextColor?: string;
+  pieSectionTextSize?: number;
+  pieSectionTextColor?: string;
+  pieLegendTextSize?: number;
+  pieLegendTextColor?: string;
+  pieStrokeColor?: string;
+  pieStrokeWidth?: number;
+  pieOuterStrokeWidth?: number;
+  pieOuterStrokeColor?: string;
+  pieOpacity?: number;
+  nodeSpacing?: number;
+  rankSpacing?: number;
   /** Preferred output aspect ratio (e.g. 1.778 for 16:9) */
-  preferredAspectRatio?: number
+  preferredAspectRatio?: number;
   /** Use fast (approximate) text metrics for speed */
-  fastTextMetrics?: boolean
+  fastTextMetrics?: boolean;
 }
