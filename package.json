@@ -71,9 +71,6 @@
   "peerDependencies": {
     "satteri": ">=0.8.0"
   },
-  "overrides": {
-    "vitest/vite": "8.2.0"
-  },
   "napi": {
     "binaryName": "mermaid-rs",
     "targets": [
