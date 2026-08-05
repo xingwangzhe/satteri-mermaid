@@ -4,7 +4,7 @@ import mdx from "@astrojs/mdx";
 import sitemap from "@astrojs/sitemap";
 import { defineConfig } from "astro/config";
 import { satteri } from "@astrojs/markdown-satteri";
-// 直接使用文件路径导入本地构建产物
+// 直接使用本地构建产物测试，不通过 npm
 import { mermaidMdast, mermaidHast } from "../dist/index.mjs";
 
 // https://astro.build/config
@@ -13,10 +13,7 @@ export default defineConfig({
   integrations: [mdx(), sitemap()],
   vite: {
     server: {
-      fs: {
-        // 允许访问项目外部的文件（父目录中的 dist）
-        allow: ["../.."],
-      },
+      fs: { allow: ["../.."] },
     },
   },
   markdown: {
