@@ -1,5 +1,5 @@
 import { defineMdastPlugin, defineHastPlugin } from "satteri";
-import type { HastVisitorContext, MdastPluginDefinition, HastPluginDefinition } from "satteri";
+import type { MdastPluginDefinition, HastPluginDefinition } from "satteri";
 import { renderMermaidSVG } from "./renderer";
 
 const DATA_KEY = "__satteri_mermaid_codes";
