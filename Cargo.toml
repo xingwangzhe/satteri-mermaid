@@ -9,15 +9,15 @@ version = "0.1.0"
 crate-type = ["cdylib"]
 
 [dependencies]
-napi-derive = "3.6.3"
+napi-derive = "3.6.9"
 mermaid-rs-renderer = "0.3.1"
 
 [dependencies.napi]
-version = "3.12.2"
+version = "3.13.0"
 features = ["napi10"]
 
 [build-dependencies]
-napi-build = "2"
+napi-build = "2.5.0"
 
 [profile.release]
 lto = true
