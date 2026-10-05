@@ -1,345 +1,115 @@
 # @xingwangzhe/satteri-mermaid
 
-[English](README.md) | [中文文档](README_CN.md)
+在 Sätteri 编译阶段，把 Mermaid 代码块渲染为内联 SVG。后端通过 napi-rs 调用已发布的 **Merman 0.7.0** Rust 渲染器；插件使用 **Sätteri 0.10.5** 验证。静态渲染不需要 Mermaid 客户端脚本、DOM、浏览器或 WASM 运行时。
 
-> Sätteri MDAST + HAST 双插件：通过 [mermaid-rs](https://github.com/1jehuang/mermaid-rs-renderer)（napi-rs）在构建时渲染 Mermaid 图表为静态 SVG。**23 种图表类型，~3ms/图，零客户端 JS。**
+[English](./README.md)
 
-## 特性
+本文对应 **0.8.0 版本**，后端为 Merman 原生渲染器。全部配置、11 个主题预设、兼容别名及颜色映射见 [配置与主题说明](./docs/configuration.zh-CN.md)，改动记录见 [CHANGELOG](./CHANGELOG.md)。
 
-- **SSG SVG 渲染** — 通过 napi-rs 原生绑定在构建时渲染为静态内联 SVG。无 WASM，无 `mermaid.js`，零运行时开销。
-- **23 种图表类型** — flowchart、sequence、class、state、gantt、pie、ER、gitgraph、mindmap、timeline、sankey 等。
-- **5 种主题预设** — `modern`、`dark`、`default`、`forest`、`neutral` — 外加完整的逐字段颜色自定义。
-- **ssg 开关** — `ssg: true` 构建时产出 SVG；`ssg: false` 保留原始代码块，交由客户端 mermaid.js 渲染。
-- **自动响应式** — `responsive: true`（默认）自动移除固定宽高并添加 `width:100%`。
-- **完整 mermaid-rs 参数覆盖** — 所有主题颜色、Git 图颜色、饼图样式、排版、布局和渲染选项均已暴露。
-- **双插件架构** — MDAST 插件检测代码块，HAST 插件渲染或还原。免疫 Sätteri 文本变换。
-- **TypeScript** — 完整类型定义。
-
-## 安装
-
-```bash
-npm install @xingwangzhe/satteri-mermaid
+```sh
+bun add @xingwangzhe/satteri-mermaid@0.8.0 satteri@0.10.5
 ```
 
-依赖 `satteri >= 0.8.0`。无需其他运行时依赖 — napi-rs 渲染器已内置。
+要求 **Node.js 22.14.0 或更新版本**，原生绑定使用 Node-API 10。包入口为 **ES 模块**。发布矩阵提供 Linux glibc x64/arm64、macOS arm64、Windows x64 原生构建；其他平台需要自行构建兼容二进制。当前不提供 macOS x64、Windows arm64、Linux musl 二进制。
 
-## 使用
-
-### 基础配置
-
-```js
-// astro.config.mjs
-import { defineConfig } from "astro/config";
-import { satteri } from "@astrojs/markdown-satteri";
+````ts
+import { markdownToHtml } from "satteri";
 import { mermaidMdast, mermaidHast } from "@xingwangzhe/satteri-mermaid";
 
-export default defineConfig({
-  markdown: {
-    processor: satteri({
-      mdastPlugins: [mermaidMdast()],
-      hastPlugins: [mermaidHast()],
-    }),
-  },
+const source = "```mermaid\nflowchart TD\n A[Start] --> B[Done]\n```";
+const result = await markdownToHtml(source, {
+  mdastPlugins: [mermaidMdast()],
+  hastPlugins: [mermaidHast({ theme: "default" })],
 });
-```
+console.log(result.html);
+````
 
-最简单的配置 — 全部使用默认值：`ssg: true`、`theme: "modern"`、`responsive: true`。
+两个插件必须一起注册。MDAST 保存原始代码，HAST 渲染代码并替换占位节点。同样的注册方式适用于 `mdxToJs`；MDX 路径写入结构化 SVG 节点，无须调用者启用原始 HTML 编译。与其他 HAST 插件组合时，应在会丢弃占位符或共享数据的转换之前运行 Mermaid 插件。
 
-### 完整配置示例
+默认输出为 `<div class="mermaid" data-mermaid-ssg="true">`，内部 SVG 带有 `viewBox`、可读文字标签及独立的图表 ID。自适应模式只移除 SVG 根节点的尺寸，保留内部矩形等图形的尺寸。
 
-```js
-// astro.config.mjs
-import { defineConfig } from "astro/config";
-import { satteri } from "@astrojs/markdown-satteri";
-import { mermaidMdast, mermaidHast } from "@xingwangzhe/satteri-mermaid";
+| 选项                              | 默认值        | 作用                                                                                  |
+| --------------------------------- | ------------- | ------------------------------------------------------------------------------------- |
+| `langs`                           | `["mermaid"]` | 匹配的代码块语言                                                                      |
+| `ssg`                             | `true`        | 编译时渲染；设为 `false` 时输出转义的 `<pre class="mermaid">`，客户端渲染器由宿主提供 |
+| `responsive`                      | `true`        | SVG 适应容器宽度                                                                      |
+| `theme`                           | `"default"`   | Merman 主题预设                                                                       |
+| `font`、`fontSize`                | 引擎默认值    | 字体族与像素字号                                                                      |
+| `nodeSpacing`、`rankSpacing`      | 引擎默认值    | Mermaid 流程图间距                                                                    |
+| `siteConfig`                      | 引擎默认值    | 完整 Mermaid 配置对象                                                                 |
+| `themeVariables`                  | —             | Mermaid 主题变量覆盖                                                                  |
+| `themeCSS`                        | —             | Mermaid 主题 CSS                                                                      |
+| `scopedCSS`                       | —             | 通过 Merman SVG 后处理器添加作用域 CSS                                                |
+| `themeOverrides`                  | —             | 旧版逐色选项的兼容映射                                                                |
+| `viewportWidth`、`viewportHeight` | 引擎默认值    | 有限且大于零的布局视口尺寸；不保证 SVG 固定宽高比                                     |
+| `fastTextMetrics`                 | `false`       | 使用 Merman 的确定性文本测量器                                                        |
+| `onError`                         | `"throw"`     | 失败时抛错；`"warn-and-code"` 警告并保留代码；`"code"` 静默保留代码                   |
 
-export default defineConfig({
-  markdown: {
-    processor: satteri({
-      // MDAST 插件：检测代码块并存储原始 mermaid 代码
-      mdastPlugins: [
-        mermaidMdast({
-          langs: ["mermaid", "mmd"], // 匹配多种语言标识，默认 ["mermaid"]
-        }),
-      ],
+支持的主题名称为 `default`、`base`、`dark`、`forest`、`neutral`、`neo`、`neo-dark`、`redux`、`redux-dark`、`redux-color`、`redux-dark-color`。保留 `modern` 作为 `default` 的兼容别名；直接渲染 API 的主题名不区分大小写。
 
-      // HAST 插件：将代码块替换为 SVG 或保留原始代码
-      hastPlugins: [
-        mermaidHast({
-          // ── 渲染模式 ─────────────────────────────────────
-          ssg: true, // true=构建时渲染 SVG（默认）
-          // false=输出 <pre class="mermaid"> 给客户端
-
-          // ── 响应式 ──────────────────────────────────────
-          responsive: true, // 自动移除 width/height，添加 width:100%
-
-          // ── 主题 ────────────────────────────────────────
-          theme: "dark", // "modern" | "dark" | "default" | "forest" | "neutral"
-
-          // ── 排版 ────────────────────────────────────────
-          font: "Fira Code, monospace",
-          fontSize: 14,
-
-          // ── 布局 ────────────────────────────────────────
-          nodeSpacing: 60, // 节点垂直间距 (px)
-          rankSpacing: 80, // 层级水平间距 (px)
-          preferredAspectRatio: 1.778, // 16:9 宽高比
-
-          // ── 渲染选项 ────────────────────────────────────
-          fastTextMetrics: false, // 使用快速文本宽度估算提升速度
-
-          // ── 逐色覆盖（全部支持 CSS 变量）───────────────
-          themeOverrides: {
-            // 画布
-            background: "#0f172a",
-
-            // 节点
-            primaryColor: "#1e293b",
-            primaryBorderColor: "#ff6600",
-            primaryTextColor: "#e2e8f0",
-
-            // 备用 / 弱化表面
-            secondaryColor: "#334155",
-            tertiaryColor: "#475569",
-            textColor: "#94a3b8",
-
-            // 连线
-            lineColor: "#ff6600",
-            edgeLabelBackground: "#1e293b",
-
-            // 子图 / Cluster
-            clusterBackground: "#0a0f1e",
-            clusterBorder: "#334155",
-
-            // 时序图
-            sequenceActorFill: "#1e293b",
-            sequenceActorBorder: "#475569",
-            sequenceActorLine: "#334155",
-            sequenceNoteFill: "#1e293b",
-            sequenceNoteBorder: "#f59e0b",
-            sequenceActivationFill: "#065f46",
-            sequenceActivationBorder: "#34d399",
-
-            // Git 图 — 分支颜色 (8 slots)
-            git0: "#ff0000",
-            git1: "#00ff00",
-            git2: "#0000ff",
-            git3: "#ffff00",
-            git4: "#ff00ff",
-            git5: "#00ffff",
-            git6: "#800000",
-            git7: "#008000",
-            // Git — 反色
-            gitInv0: "#800000",
-            gitInv1: "#008000",
-            // Git — 分支标签颜色
-            gitBranchLabel0: "white",
-            gitBranchLabel1: "black",
-            // Git — 提交/标签
-            gitCommitLabelColor: "#333",
-            gitCommitLabelBackground: "#eee",
-            gitTagLabelColor: "#111",
-            gitTagLabelBackground: "#ddd",
-            gitTagLabelBorder: "#999",
-
-            // 饼图 — 12 色板
-            pie1: "#ff0000",
-            pie2: "#00ff00",
-            pie3: "#0000ff",
-            pie4: "#ffff00",
-            pie5: "#ff00ff",
-            pie6: "#00ffff",
-            pie7: "#800000",
-            pie8: "#008000",
-            pie9: "#000080",
-            pie10: "#808000",
-            pie11: "#800080",
-            pie12: "#008080",
-            // 饼图 — 样式
-            pieTitleTextSize: 25,
-            pieTitleTextColor: "#333",
-            pieSectionTextSize: 17,
-            pieSectionTextColor: "#666",
-            pieLegendTextSize: 17,
-            pieLegendTextColor: "#999",
-            pieStrokeColor: "#000",
-            pieStrokeWidth: 2,
-            pieOuterStrokeWidth: 2,
-            pieOuterStrokeColor: "#ccc",
-            pieOpacity: 0.85,
-
-            // 排版（也可在此设置）
-            fontFamily: "Fira Code, monospace",
-            fontSize: 14,
-          },
-        }),
-      ],
-    }),
-  },
-});
-```
-
-### SSG 模式（默认）
-
-```js
-// 构建时渲染 — 零客户端 JS
-mermaidHast({ ssg: true });
-```
-
-所有 ` ```mermaid ` 代码块在 `astro build` 时被替换为内联 `<svg>`：
-
-```html
-<div class="mermaid" data-mermaid-ssg="true">
-  <svg viewBox="..." style="width:100%;display:block">...</svg>
-</div>
-```
-
-### 客户端模式
-
-```js
-// 保留原始代码块，交给客户端 mermaid.js
-mermaidHast({ ssg: false });
-```
-
-此时插件只输出 `<pre class="mermaid">code</pre>`，在 HTML 中引入 mermaid.js 即可：
-
-```html
-<script type="module">
-  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
-  mermaid.initialize({ startOnLoad: true });
-</script>
-```
-
-## 主题预设
-
-通过 `theme` 选择 5 种预设主题：
-
-| 预设        | 外观                              |
-| ----------- | --------------------------------- |
-| `"modern"`  | 简洁石板色调（默认）— Inter, 14px |
-| `"dark"`    | 深色背景，浅色元素                |
-| `"default"` | 经典 Mermaid 主题                 |
-| `"forest"`  | 绿色系                            |
-| `"neutral"` | 灰色系                            |
-
-```js
+```ts
 mermaidHast({
-  theme: "dark",
-  themeOverrides: {
-    primaryBorderColor: "#ff6600",
-    background: "#1a1a2e",
-    lineColor: "var(--accent, #58a6ff)",
-    primaryTextColor: "var(--muted-text, #8b949e)",
-  },
+  theme: "base",
+  themeVariables: { primaryColor: "#e8f3ff", primaryBorderColor: "#2864a0" },
+  scopedCSS: ".node rect { stroke-width: 3px; }",
+  siteConfig: { flowchart: { curve: "linear" } },
+  onError: "throw",
 });
 ```
 
-## 选项参考
+主题变量优先级从低到高为引擎默认值、`siteConfig`、旧版逐色覆盖、显式 `themeVariables`。顶层 `theme`、`themeCSS` 和间距选项覆盖 `siteConfig` 中对应项；不会修改调用者传入的配置对象。具体变量和语法由 Merman 实现，接受配置键不代表所有图表都会应用该配置。
 
-### MermaidPluginOptions
+原生默认配置为 `htmlLabels: false`、`securityLevel: "strict"`。测试确认默认流程图输出不会保留 JavaScript 链接。这是特定默认配置的验证，不代表任意自定义配置、CSS 或不可信输入都经过完整安全净化。
 
-| 选项                   | 类型             | 默认值        | 说明                                  |
-| ---------------------- | ---------------- | ------------- | ------------------------------------- |
-| `langs`                | `string[]`       | `["mermaid"]` | 匹配的代码块语言标识                  |
-| `ssg`                  | `boolean`        | `true`        | 构建时 SVG 渲染                       |
-| `responsive`           | `boolean`        | `true`        | SVG 自动 `width:100%;display:block`   |
-| `theme`                | `ThemePreset`    | `"modern"`    | 预设主题                              |
-| `font`                 | `string`         | —             | 图表文字字体                          |
-| `fontSize`             | `number`         | —             | 字号 (px)                             |
-| `nodeSpacing`          | `number`         | —             | 节点垂直间距 (px)                     |
-| `rankSpacing`          | `number`         | —             | 层级水平间距 (px)                     |
-| `preferredAspectRatio` | `number`         | —             | 目标宽高比（如 1.778 = 16:9）         |
-| `fastTextMetrics`      | `boolean`        | `false`       | 使用近似文本宽度加速渲染              |
-| `themeOverrides`       | `ThemeOverrides` | —             | 逐字段颜色和样式覆盖（支持 CSS 变量） |
+也可以直接调用渲染器或查询引擎目录：
 
-### ThemeOverrides — 节点与连线颜色
+```ts
+import { renderMermaidSVG, supportedDiagrams } from "@xingwangzhe/satteri-mermaid";
 
-| 字段                  | 控制元素          |
-| --------------------- | ----------------- |
-| `background`          | 画布背景          |
-| `primaryColor`        | 节点填充          |
-| `secondaryColor`      | 备用表面填充      |
-| `tertiaryColor`       | 弱化表面填充      |
-| `primaryTextColor`    | 主文字 / 标签     |
-| `textColor`           | 次要文字 / 边标签 |
-| `primaryBorderColor`  | 节点和分组边框    |
-| `lineColor`           | 连线 / 连接器     |
-| `edgeLabelBackground` | 边标签背景        |
-| `clusterBackground`   | 子图背景          |
-| `clusterBorder`       | 子图边框          |
-
-### ThemeOverrides — 时序图
-
-| 字段                       | 控制元素     |
-| -------------------------- | ------------ |
-| `sequenceActorFill`        | 参与者填充   |
-| `sequenceActorBorder`      | 参与者边框   |
-| `sequenceActorLine`        | 参与者生命线 |
-| `sequenceNoteFill`         | 注释填充     |
-| `sequenceNoteBorder`       | 注释边框     |
-| `sequenceActivationFill`   | 激活条填充   |
-| `sequenceActivationBorder` | 激活条边框   |
-
-### ThemeOverrides — Git 图（各 8 个槽位）
-
-| 槽位类型     | 字段模式                                                         |
-| ------------ | ---------------------------------------------------------------- |
-| 分支颜色     | `git0` … `git7`                                                  |
-| 反色         | `gitInv0` … `gitInv7`                                            |
-| 分支标签颜色 | `gitBranchLabel0` … `gitBranchLabel7`                            |
-| 提交标签     | `gitCommitLabelColor`、`gitCommitLabelBackground`                |
-| Tag 标签     | `gitTagLabelColor`、`gitTagLabelBackground`、`gitTagLabelBorder` |
-
-### ThemeOverrides — 饼图
-
-| 槽位 / 样式 | 字段                                                                             |
-| ----------- | -------------------------------------------------------------------------------- |
-| 12 色板     | `pie1` … `pie12`                                                                 |
-| 标题        | `pieTitleTextSize`、`pieTitleTextColor`                                          |
-| 扇区标签    | `pieSectionTextSize`、`pieSectionTextColor`                                      |
-| 图例        | `pieLegendTextSize`、`pieLegendTextColor`                                        |
-| 描边        | `pieStrokeColor`、`pieStrokeWidth`、`pieOuterStrokeWidth`、`pieOuterStrokeColor` |
-| 透明度      | `pieOpacity`                                                                     |
-
-### ThemeOverrides — 排版
-
-| 字段         | 控制元素     |
-| ------------ | ------------ |
-| `fontFamily` | 字体族字符串 |
-| `fontSize`   | 字号 (px)    |
-
-## 支持的图表类型
-
-`architecture` `block` `c4` `class` `er` `flowchart` `gantt` `gitgraph` `info` `journey` `kanban` `mindmap` `packet` `pie` `quadrantchart` `radar` `requirement` `sankey` `sequence` `state` `timeline` `treemap` `venn` `xychart`
-
-## 工作原理
-
-```
-Markdown 代码块 → MDAST 插件（存储代码，输出占位符）
-  → Sätteri 处理（占位符不被破坏）
-  → HAST 插件
-      ssg: true  → napi-rs 渲染器 → 内联 SVG
-      ssg: false → <pre class="mermaid">code</pre>（客户端渲染）
+const svg = renderMermaidSVG("flowchart LR\n A --> B", {
+  theme: "dark",
+  diagramId: "overview", // 可选；同一页面的每张图请使用不同 ID
+});
+console.log(supportedDiagrams());
 ```
 
-## API
+原生绑定采用延迟加载，导入包并使用 `ssg: false` 不会加载原生渲染器。自动 ID 在同一进程内互不相同；显式指定 `diagramId` 可以得到可重复的输出。图表目录直接来自编译的引擎，不额外维护一份名单；目录条目不等于完整 Mermaid 语法支持或与浏览器渲染器完全一致。
 
-| 导出                                 | 说明                                        |
-| ------------------------------------ | ------------------------------------------- |
-| `mermaidMdast(options?)`             | MDAST 插件 — 注册到 `mdastPlugins`          |
-| `mermaidHast(options?)`              | HAST 插件 — 注册到 `hastPlugins`            |
-| `createMermaidMdastPlugin(options?)` | 工厂函数：返回 `{ plugin, popFlags }`       |
-| `createMermaidHastPlugin(options?)`  | 工厂函数：返回 `{ plugin }`                 |
-| `renderMermaidSVG(code, opts)`       | 直接调用底层渲染器（支持所有 napi-rs 参数） |
+从 mermaid-rs-renderer 后端迁移时需要注意：
 
-## 平台支持
+- 渲染引擎、布局、字体、默认主题及生成的 SVG 都可能变化，升级生产网站前应检查代表性图表。
+- Merman 不支持 `preferredAspectRatio`，传入时会明确抛错。视口尺寸或容器 CSS 可以作为调整手段，但语义不同。
+- 默认渲染失败会抛错。如需保留源代码，请显式选择回退策略。
+- 不再声明 `require()` 导出，请使用 ESM `import`；原来声明的 `dist/index.cjs` 实际不存在。
+- `mermaid()`、`mermaidPlugin`、`createMermaidPlugin` 仍保留为只注册 MDAST 的兼容入口，还需要注册 HAST 渲染插件。
+- Sätteri peer 范围更新为 `>=0.10.5 <0.11.0`。此工作区原本已经使用 0.10.5，本次固定已测试版本并修正兼容范围。
 
-| 平台    | 架构                        |
-| ------- | --------------------------- |
-| Linux   | x64、arm64                  |
-| macOS   | x64、arm64（Apple Silicon） |
-| Windows | x64                         |
+已知上游限制：Merman 0.7.0 可能把流程图文字标签中的小于号重复转义，显示成 `&lt;` 文本；测试中有对应 TODO。类似 HTML 标签的内容也会受上游标签处理规则影响，即使使用原生 SVG 文字输出。本包不承诺完整语法覆盖、固定渲染耗时、与 Mermaid.js 像素级一致或保证搜索引擎收录。
 
-## License
+在示例项目中直接预览本地包效果：
 
-MIT
+```sh
+bun run preview
+```
+
+命令会构建本地包及静态示例，再启动 Astro preview（通常为 `http://127.0.0.1:4321/`）。页面展示 18 类图表与 11 个主题，直接使用包生成 SVG 自带的 Mermaid 样式。前台服务保持进程运行，Ctrl+C 停止；后台服务使用 `bun run preview:stop` 停止。`bun run dev` 启动示例开发服务器。
+
+从源码构建需要 **Rust 1.95 或更新版本**、Node.js 22.14+ 与 Bun：
+
+```sh
+bun install --frozen-lockfile
+bun run build:debug
+bun run typecheck
+bun run test
+bun run lint
+bun run fmt:check
+cargo fmt -- --check
+cargo clippy --locked -- -D warnings
+bun run build
+```
+
+提交 `Cargo.lock` 与 `bun.lock`，原生构建使用 `--locked`。当前测试集为 **83 项通过、1 项上游问题 TODO**，已在 Linux x64、Node 22.14.0 与 24.21.0 下使用 release 产物验证。测试覆盖 18 类图表的实际渲染、XML 合法性、有限数值、11 个主题、配置的可观察效果、ID 隔离、错误策略、Markdown/MDX 编译、自适应模式内部图形尺寸，以及独立 Node 进程中的包入口。这是代表性覆盖，不是完整的上游一致性测试。CI 配置覆盖四种发布平台及最低 Node 版本，发布任务会先测试原生 release 产物。
+
+本项目使用 MIT 许可证。Merman 是独立依赖，许可证为 MIT OR Apache-2.0。上游行为和许可证请参见 [Merman 源码](https://github.com/Latias94/merman)及 [Sätteri 源码](https://github.com/bruits/satteri)。
+
+项目 [LICENSE](./LICENSE) 保持 MIT，版权署名为 Copyright (c) 2026 王兴家。Merman 的 MIT 声明另存于 [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md)，并随 npm 包分发。

@@ -1,345 +1,115 @@
 # @xingwangzhe/satteri-mermaid
 
-[English](README.md) | [中文文档](README_CN.md)
+Render Mermaid fences to inline SVG during a Sätteri build. The backend uses the published **Merman 0.7.0** Rust renderer through napi-rs; the plugin is tested with **Sätteri 0.10.5**. Static rendering requires no Mermaid client script, DOM, browser, or WASM runtime.
 
-> Sätteri MDAST + HAST plugin: render Mermaid diagrams as static SVG at build time via [mermaid-rs](https://github.com/1jehuang/mermaid-rs-renderer) (napi-rs). **23 diagram types, ~3ms/diagram, zero client JS.**
+[中文文档](./README_CN.md)
 
-## Features
+This document describes **version 0.8.0**, with the Merman native backend. See the [complete configuration and theme reference](./docs/configuration.md) and [changelog](./CHANGELOG.md).
 
-- **SSG SVG rendering** — renders diagrams as static inline SVG at build time via napi-rs native bindings. No WASM, no `mermaid.js`, zero runtime overhead.
-- **23 diagram types** — flowchart, sequence, class, state, gantt, pie, ER, gitgraph, mindmap, timeline, sankey, and more.
-- **5 theme presets** — `modern`, `dark`, `default`, `forest`, `neutral` — plus full per-role color customization.
-- **ssg switch** — `ssg: true` produces SVG at build time; `ssg: false` emits raw code blocks for client-side mermaid.js.
-- **Auto-responsive** — `responsive: true` (default) removes fixed SVG dimensions and adds `width:100%`.
-- **Full mermaid-rs parameter coverage** — all theme colors, git graph colors, pie chart styling, typography, layout, and render options exposed.
-- **Dual-plugin architecture** — MDAST plugin detects code blocks, HAST plugin renders or restores them. Immune to Sätteri text transforms.
-- **TypeScript** — fully typed with exported interfaces.
-
-## Install
-
-```bash
-npm install @xingwangzhe/satteri-mermaid
+```sh
+bun add @xingwangzhe/satteri-mermaid@0.8.0 satteri@0.10.5
 ```
 
-Requires `satteri >= 0.8.0`. No other runtime dependencies — the napi-rs renderer is bundled.
+Use Node.js **22.14.0 or newer** (the binding uses Node-API 10). The package exposes an **ES module** entry point. Native build targets are Linux x64/arm64 with glibc, macOS arm64, and Windows x64. Other platforms need a compatible source build; macOS x64, Windows arm64, and Linux musl binaries are not supplied by this repository's release matrix.
 
-## Usage
-
-### Basic Config
-
-```js
-// astro.config.mjs
-import { defineConfig } from "astro/config";
-import { satteri } from "@astrojs/markdown-satteri";
+````ts
+import { markdownToHtml } from "satteri";
 import { mermaidMdast, mermaidHast } from "@xingwangzhe/satteri-mermaid";
 
-export default defineConfig({
-  markdown: {
-    processor: satteri({
-      mdastPlugins: [mermaidMdast()],
-      hastPlugins: [mermaidHast()],
-    }),
-  },
+const source = "```mermaid\nflowchart TD\n A[Start] --> B[Done]\n```";
+const result = await markdownToHtml(source, {
+  mdastPlugins: [mermaidMdast()],
+  hastPlugins: [mermaidHast({ theme: "default" })],
 });
-```
+console.log(result.html);
+````
 
-Simplest config — all defaults: `ssg: true`, `theme: "modern"`, `responsive: true`.
+Register both plugins. MDAST captures the original fence; HAST renders it and replaces its placeholder. The same pair works with `mdxToJs`. MDX output contains structured SVG nodes so callers do not need to enable raw HTML compilation. With another HAST plugin, run Mermaid before a transformation that discards its placeholders or shared data.
 
-### Full Configuration
+The default output is a `<div class="mermaid" data-mermaid-ssg="true">` containing an SVG with a `viewBox`, readable SVG text labels, and unique diagram IDs. Responsive mode removes only the root SVG dimensions and preserves the dimensions of shapes inside the diagram.
 
-```js
-// astro.config.mjs
-import { defineConfig } from "astro/config";
-import { satteri } from "@astrojs/markdown-satteri";
-import { mermaidMdast, mermaidHast } from "@xingwangzhe/satteri-mermaid";
+| Option                            | Default         | Behavior                                                                                                             |
+| --------------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `langs`                           | `["mermaid"]`   | Fence languages to handle                                                                                            |
+| `ssg`                             | `true`          | Render during compilation; `false` produces escaped `<pre class="mermaid">` code for a host-provided client renderer |
+| `responsive`                      | `true`          | Fit SVG to its container                                                                                             |
+| `theme`                           | `"default"`     | Merman theme preset                                                                                                  |
+| `font`, `fontSize`                | Engine defaults | Font family and font size in pixels                                                                                  |
+| `nodeSpacing`, `rankSpacing`      | Engine defaults | Mermaid flowchart spacing                                                                                            |
+| `siteConfig`                      | Engine defaults | Full Mermaid configuration object                                                                                    |
+| `themeVariables`                  | —               | Mermaid theme-variable overrides                                                                                     |
+| `themeCSS`                        | —               | Mermaid theme CSS                                                                                                    |
+| `scopedCSS`                       | —               | CSS added through Merman's scoped SVG postprocessor                                                                  |
+| `themeOverrides`                  | —               | Compatibility mapping for the previous flat color options                                                            |
+| `viewportWidth`, `viewportHeight` | Engine defaults | Positive finite layout viewport dimensions; these do not guarantee a fixed SVG aspect ratio                          |
+| `fastTextMetrics`                 | `false`         | Use Merman's deterministic text measurer                                                                             |
+| `onError`                         | `"throw"`       | Throw on rendering failure; `"warn-and-code"` logs a warning and preserves code; `"code"` preserves code silently    |
 
-export default defineConfig({
-  markdown: {
-    processor: satteri({
-      // MDAST plugin: detects code blocks and stores raw mermaid code
-      mdastPlugins: [
-        mermaidMdast({
-          langs: ["mermaid", "mmd"], // match multiple language identifiers
-        }),
-      ],
+Supported theme names are `default`, `base`, `dark`, `forest`, `neutral`, `neo`, `neo-dark`, `redux`, `redux-dark`, `redux-color`, and `redux-dark-color`. `modern` is retained as an alias for `default`. For direct rendering, theme names are case-insensitive.
 
-      // HAST plugin: replaces code blocks with SVG or preserves raw code
-      hastPlugins: [
-        mermaidHast({
-          // ── Render mode ─────────────────────────────────────
-          ssg: true, // true = build-time SVG rendering (default)
-          // false = emit <pre class="mermaid"> for client-side
-
-          // ── Responsive ──────────────────────────────────────
-          responsive: true, // auto-remove width/height, add width:100%
-
-          // ── Theme ───────────────────────────────────────────
-          theme: "dark", // "modern" | "dark" | "default" | "forest" | "neutral"
-
-          // ── Typography ──────────────────────────────────────
-          font: "Fira Code, monospace",
-          fontSize: 14,
-
-          // ── Layout ──────────────────────────────────────────
-          nodeSpacing: 60, // vertical spacing between nodes (px)
-          rankSpacing: 80, // horizontal spacing between ranks (px)
-          preferredAspectRatio: 1.778, // 16:9 aspect ratio
-
-          // ── Render options ──────────────────────────────────
-          fastTextMetrics: false, // use approximate text widths for speed
-
-          // ── Theme color overrides (all support CSS variables) ─
-          themeOverrides: {
-            // Canvas
-            background: "#0f172a",
-
-            // Nodes
-            primaryColor: "#1e293b",
-            primaryBorderColor: "#ff6600",
-            primaryTextColor: "#e2e8f0",
-
-            // Surfaces
-            secondaryColor: "#334155",
-            tertiaryColor: "#475569",
-            textColor: "#94a3b8",
-
-            // Edges
-            lineColor: "#ff6600",
-            edgeLabelBackground: "#1e293b",
-
-            // Subgraph / Cluster
-            clusterBackground: "#0a0f1e",
-            clusterBorder: "#334155",
-
-            // Sequence diagram
-            sequenceActorFill: "#1e293b",
-            sequenceActorBorder: "#475569",
-            sequenceActorLine: "#334155",
-            sequenceNoteFill: "#1e293b",
-            sequenceNoteBorder: "#f59e0b",
-            sequenceActivationFill: "#065f46",
-            sequenceActivationBorder: "#34d399",
-
-            // Git graph — branch colors (8 slots)
-            git0: "#ff0000",
-            git1: "#00ff00",
-            git2: "#0000ff",
-            git3: "#ffff00",
-            git4: "#ff00ff",
-            git5: "#00ffff",
-            git6: "#800000",
-            git7: "#008000",
-            // Git — inverse colors
-            gitInv0: "#800000",
-            gitInv1: "#008000",
-            // Git — branch label colors
-            gitBranchLabel0: "white",
-            gitBranchLabel1: "black",
-            // Git — commit / tag labels
-            gitCommitLabelColor: "#333",
-            gitCommitLabelBackground: "#eee",
-            gitTagLabelColor: "#111",
-            gitTagLabelBackground: "#ddd",
-            gitTagLabelBorder: "#999",
-
-            // Pie chart — 12-slice palette
-            pie1: "#ff0000",
-            pie2: "#00ff00",
-            pie3: "#0000ff",
-            pie4: "#ffff00",
-            pie5: "#ff00ff",
-            pie6: "#00ffff",
-            pie7: "#800000",
-            pie8: "#008000",
-            pie9: "#000080",
-            pie10: "#808000",
-            pie11: "#800080",
-            pie12: "#008080",
-            // Pie — styling
-            pieTitleTextSize: 25,
-            pieTitleTextColor: "#333",
-            pieSectionTextSize: 17,
-            pieSectionTextColor: "#666",
-            pieLegendTextSize: 17,
-            pieLegendTextColor: "#999",
-            pieStrokeColor: "#000",
-            pieStrokeWidth: 2,
-            pieOuterStrokeWidth: 2,
-            pieOuterStrokeColor: "#ccc",
-            pieOpacity: 0.85,
-
-            // Typography (can also be set here)
-            fontFamily: "Fira Code, monospace",
-            fontSize: 14,
-          },
-        }),
-      ],
-    }),
-  },
-});
-```
-
-### SSG Mode (default)
-
-```js
-// Build-time rendering — zero client JS
-mermaidHast({ ssg: true });
-```
-
-All ` ```mermaid ` blocks are replaced with inline `<svg>` at `astro build`:
-
-```html
-<div class="mermaid" data-mermaid-ssg="true">
-  <svg viewBox="..." style="width:100%;display:block">...</svg>
-</div>
-```
-
-### Client Mode
-
-```js
-// Preserve raw code blocks for client-side mermaid.js
-mermaidHast({ ssg: false });
-```
-
-Emits `<pre class="mermaid">code</pre>`. Include mermaid.js in your HTML:
-
-```html
-<script type="module">
-  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
-  mermaid.initialize({ startOnLoad: true });
-</script>
-```
-
-## Theme Presets
-
-5 built-in presets via the `theme` option:
-
-| Preset      | Appearance                                  |
-| ----------- | ------------------------------------------- |
-| `"modern"`  | Clean slate palette (default) — Inter, 14px |
-| `"dark"`    | Dark background, light elements             |
-| `"default"` | Classic Mermaid theme                       |
-| `"forest"`  | Green-based                                 |
-| `"neutral"` | Greyscale                                   |
-
-```js
+```ts
 mermaidHast({
-  theme: "dark",
-  themeOverrides: {
-    primaryBorderColor: "#ff6600",
-    background: "#1a1a2e",
-    lineColor: "var(--accent, #58a6ff)",
-    primaryTextColor: "var(--muted-text, #8b949e)",
-  },
+  theme: "base",
+  themeVariables: { primaryColor: "#e8f3ff", primaryBorderColor: "#2864a0" },
+  scopedCSS: ".node rect { stroke-width: 3px; }",
+  siteConfig: { flowchart: { curve: "linear" } },
+  onError: "throw",
 });
 ```
 
-## Options Reference
+Configuration precedence is engine defaults, `siteConfig`, legacy flat overrides, then explicit `themeVariables`. Explicit top-level `theme`, `themeCSS`, and spacing override their equivalents in `siteConfig`. The caller's configuration object is not mutated. Mermaid variables and diagram syntax are implemented by Merman; accepting a configuration key does not prove that every diagram applies it.
 
-### MermaidPluginOptions
+The default native configuration sets `htmlLabels: false` and `securityLevel: "strict"`. Tests verify that a JavaScript URL is absent from default flowchart output. This is a tested default, not a sanitizer guarantee for arbitrary caller-supplied configurations, CSS, or untrusted source.
 
-| Option                 | Type             | Default       | Description                                           |
-| ---------------------- | ---------------- | ------------- | ----------------------------------------------------- |
-| `langs`                | `string[]`       | `["mermaid"]` | Code block language identifiers                       |
-| `ssg`                  | `boolean`        | `true`        | Build-time SVG rendering                              |
-| `responsive`           | `boolean`        | `true`        | Auto `width:100%;display:block` on SVG                |
-| `theme`                | `ThemePreset`    | `"modern"`    | Preset theme                                          |
-| `font`                 | `string`         | —             | Font family for diagram text                          |
-| `fontSize`             | `number`         | —             | Font size in px                                       |
-| `nodeSpacing`          | `number`         | —             | Vertical spacing between nodes (px)                   |
-| `rankSpacing`          | `number`         | —             | Horizontal spacing between ranks (px)                 |
-| `preferredAspectRatio` | `number`         | —             | Target aspect ratio (e.g. 1.778 = 16:9)               |
-| `fastTextMetrics`      | `boolean`        | `false`       | Use approximate text widths for faster rendering      |
-| `themeOverrides`       | `ThemeOverrides` | —             | Per-field color and style overrides (CSS var support) |
+Direct rendering and engine discovery are also available:
 
-### ThemeOverrides — Node & Edge Colors
+```ts
+import { renderMermaidSVG, supportedDiagrams } from "@xingwangzhe/satteri-mermaid";
 
-| Field                 | Controls                     |
-| --------------------- | ---------------------------- |
-| `background`          | Canvas background            |
-| `primaryColor`        | Node fill                    |
-| `secondaryColor`      | Alt surface fill             |
-| `tertiaryColor`       | Muted surface fill           |
-| `primaryTextColor`    | Primary text / labels        |
-| `textColor`           | Secondary text / edge labels |
-| `primaryBorderColor`  | Node & cluster borders       |
-| `lineColor`           | Edge lines / connectors      |
-| `edgeLabelBackground` | Edge label background        |
-| `clusterBackground`   | Subgraph background          |
-| `clusterBorder`       | Subgraph border              |
-
-### ThemeOverrides — Sequence Diagram
-
-| Field                      | Controls              |
-| -------------------------- | --------------------- |
-| `sequenceActorFill`        | Actor fill            |
-| `sequenceActorBorder`      | Actor border          |
-| `sequenceActorLine`        | Actor lifeline        |
-| `sequenceNoteFill`         | Note fill             |
-| `sequenceNoteBorder`       | Note border           |
-| `sequenceActivationFill`   | Activation bar fill   |
-| `sequenceActivationBorder` | Activation bar border |
-
-### ThemeOverrides — Git Graph (8 slots each)
-
-| Slots               | Field pattern                                                    |
-| ------------------- | ---------------------------------------------------------------- |
-| Branch colors       | `git0` … `git7`                                                  |
-| Inverse colors      | `gitInv0` … `gitInv7`                                            |
-| Branch label colors | `gitBranchLabel0` … `gitBranchLabel7`                            |
-| Commit label        | `gitCommitLabelColor`, `gitCommitLabelBackground`                |
-| Tag label           | `gitTagLabelColor`, `gitTagLabelBackground`, `gitTagLabelBorder` |
-
-### ThemeOverrides — Pie Chart
-
-| Slots / style    | Field                                                                            |
-| ---------------- | -------------------------------------------------------------------------------- |
-| 12-slice palette | `pie1` … `pie12`                                                                 |
-| Title            | `pieTitleTextSize`, `pieTitleTextColor`                                          |
-| Section labels   | `pieSectionTextSize`, `pieSectionTextColor`                                      |
-| Legend           | `pieLegendTextSize`, `pieLegendTextColor`                                        |
-| Strokes          | `pieStrokeColor`, `pieStrokeWidth`, `pieOuterStrokeWidth`, `pieOuterStrokeColor` |
-| Opacity          | `pieOpacity`                                                                     |
-
-### ThemeOverrides — Typography
-
-| Field        | Controls           |
-| ------------ | ------------------ |
-| `fontFamily` | Font family string |
-| `fontSize`   | Font size in px    |
-
-## Supported Diagram Types
-
-`architecture` `block` `c4` `class` `er` `flowchart` `gantt` `gitgraph` `info` `journey` `kanban` `mindmap` `packet` `pie` `quadrantchart` `radar` `requirement` `sankey` `sequence` `state` `timeline` `treemap` `venn` `xychart`
-
-## How It Works
-
-```
-Markdown code block → MDAST Plugin (store code, output placeholder)
-  → Sätteri processing (placeholder untouched)
-  → HAST Plugin
-      ssg: true  → napi-rs renderer → inline SVG
-      ssg: false → <pre class="mermaid">code</pre> (client-side)
+const svg = renderMermaidSVG("flowchart LR\n A --> B", {
+  theme: "dark",
+  diagramId: "overview", // optional: use a unique value for each diagram on a page
+});
+console.log(supportedDiagrams());
 ```
 
-## API
+`renderMermaidSVG` loads the native binding lazily. Importing the package and using `ssg: false` does not load it. Automatic IDs are distinct within a process; an explicit `diagramId` makes repeated rendering deterministic. The catalog is queried from the compiled engine rather than maintained as a separate list. A catalog entry is not a guarantee of complete Mermaid syntax or browser-renderer parity.
 
-| Export                               | Description                                                |
-| ------------------------------------ | ---------------------------------------------------------- |
-| `mermaidMdast(options?)`             | MDAST plugin — register in `mdastPlugins`                  |
-| `mermaidHast(options?)`              | HAST plugin — register in `hastPlugins`                    |
-| `createMermaidMdastPlugin(options?)` | Factory: returns `{ plugin, popFlags }`                    |
-| `createMermaidHastPlugin(options?)`  | Factory: returns `{ plugin }`                              |
-| `renderMermaidSVG(code, opts)`       | Direct renderer access (low-level, all napi-rs parameters) |
+Migration from the previous mermaid-rs-renderer backend:
 
-## Platform Support
+- The rendering engine, layouts, fonts, default theme, and generated SVG may change. Review representative diagrams before upgrading a production site.
+- `preferredAspectRatio` is unsupported by Merman and now raises an error. Consider viewport dimensions or container CSS; they have different semantics.
+- Rendering failures throw by default. Choose a fallback policy explicitly if preserving source code is appropriate.
+- `require()` is not exported. Use ESM `import`; the previous declared `dist/index.cjs` did not exist.
+- The older `mermaid()`, `mermaidPlugin`, and `createMermaidPlugin` exports remain MDAST-only compatibility shortcuts. Register a HAST renderer as well.
+- The Sätteri peer range is `>=0.10.5 <0.11.0`. This checkout already used 0.10.5; this change pins that tested version and updates the compatibility contract.
 
-| Platform | Arch                       |
-| -------- | -------------------------- |
-| Linux    | x64, arm64                 |
-| macOS    | x64, arm64 (Apple Silicon) |
-| Windows  | x64                        |
+Known upstream limitation: Merman 0.7.0 can double-escape a less-than sign in a flowchart text label, producing visible `&lt;` text. A TODO regression tracks this behavior. Labels containing HTML-like tags also follow the renderer's HTML-label processing rules even with native text output. This package does not claim full syntax coverage, fixed rendering times, pixel identity with Mermaid.js, or guaranteed search indexing.
 
-## License
+Preview the local package in the example site:
 
-MIT
+```sh
+bun run preview
+```
+
+This builds the package and static example, then starts Astro preview (normally `http://127.0.0.1:4321/`). The page displays 18 diagram families and 11 themes using the SVG styles emitted by the package. For a foreground server, keep the process running and use Ctrl+C to stop it. For a background server, use `bun run preview:stop`. `bun run dev` starts the example development server.
+
+To build from source, use Rust **1.95 or newer**, Node.js 22.14+, and Bun:
+
+```sh
+bun install --frozen-lockfile
+bun run build:debug
+bun run typecheck
+bun run test
+bun run lint
+bun run fmt:check
+cargo fmt -- --check
+cargo clippy --locked -- -D warnings
+bun run build
+```
+
+`Cargo.lock` and `bun.lock` are committed; native builds use `--locked`. The current suite has **83 passing tests and one upstream TODO**, verified locally on Linux x64 with Node 22.14.0 and 24.21.0 against the release build. Tests exercise 18 diagram families through the real renderer, XML validity, finite output, 11 themes, visible configuration effects, ID isolation, error policies, Markdown and MDX compilation, responsive shape preservation, and package imports in separate Node processes. They are representative coverage, not an exhaustive upstream conformance suite. CI tests all four release platforms and the minimum Node version; release jobs run tests against the native release artifacts before publication.
+
+Licensed under MIT. Merman is a separate dependency licensed under MIT OR Apache-2.0. See the [Merman source](https://github.com/Latias94/merman) and [Sätteri source](https://github.com/bruits/satteri) for upstream behavior and licenses.
+
+The project [LICENSE](./LICENSE) remains MIT, Copyright (c) 2026 王兴家. The Merman MIT notice is preserved separately in [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md), which is included in the npm package.

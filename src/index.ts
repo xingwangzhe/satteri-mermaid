@@ -1,5 +1,5 @@
 // ── 底层渲染器（高级用户可直接使用）──────────────────────────────
-export { renderMermaidSVG } from "./renderer";
+export { renderMermaidSVG, supportedDiagrams } from "./renderer";
 
 // ── 插件 ──────────────────────────────────────────────────────────
 export {

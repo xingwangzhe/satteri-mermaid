@@ -1,77 +1,24 @@
-# Astro Starter Kit: Blog
+# 本地效果预览
+
+在仓库根目录运行：
 
 ```sh
-npm create astro@latest -- --template blog
+bun run preview
 ```
 
-<!-- ASTRO:REMOVE:START -->
+命令会构建本地包、安装示例的锁定依赖、生成静态页面并启动 Astro preview。终端显示预览地址，默认是 `http://127.0.0.1:4321/`。保持命令运行，在浏览器访问即可；普通前台运行时按 Ctrl+C 停止服务；后台运行时，在根目录运行 `bun run preview:stop`。
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/astro/tree/latest/examples/blog)
-[![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/sandbox/github/withastro/astro/tree/latest/examples/blog)
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/withastro/astro?devcontainer_path=.devcontainer/blog/devcontainer.json)
+也可以在已构建包和示例后，直接进入本目录运行 `bun run preview`。开发模式在仓库根目录运行 `bun run dev`。
 
-<!-- ASTRO:REMOVE:END -->
+示例通过准备脚本链接本地包，使用 `dist` 构建产物，真实调用 `markdownToHtml` 与 Mermaid 双插件。页面展示 18 类图表、11 个主题和实际引擎目录。图表直接使用包生成 SVG 中的 Mermaid 样式；页面 CSS 仅处理页面排版和卡片，不覆盖图表内部样式。不加载 Mermaid 客户端脚本。
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+首次使用先在仓库根目录安装依赖：
 
-<!-- ASTRO:REMOVE:START -->
-
-![blog](https://github.com/withastro/astro/assets/2244813/ff10799f-a816-4703-b967-c78997e8323d)
-
-<!-- ASTRO:REMOVE:END -->
-
-Features:
-
-- ✅ Minimal styling (make it your own!)
-- ✅ 100/100 Lighthouse performance
-- ✅ SEO-friendly with canonical URLs and Open Graph data
-- ✅ Sitemap support
-- ✅ RSS Feed support
-- ✅ Markdown & MDX support
-
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-├── public/
-├── src/
-│   ├── assets/
-│   ├── components/
-│   ├── content/
-│   ├── layouts/
-│   └── pages/
-├── astro.config.mjs
-├── README.md
-├── package.json
-└── tsconfig.json
+```sh
+bun install --frozen-lockfile
+bun run preview
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+本地原生构建需要 Rust 1.95+、Node.js 22.14+ 和 Bun。根目录 `preview` 使用 debug 原生构建以缩短开发等待；正式 release 构建使用 `bun run build`。预览引用当前工作区构建，无需等待 npm 版本传播。
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
-
-The `src/content/` directory contains "collections" of related Markdown and MDX documents. Use `getCollection()` to retrieve posts from `src/content/blog/`, and type-check your frontmatter using an optional schema. See [Astro's Content Collections docs](https://docs.astro.build/en/guides/content-collections/) to learn more.
-
-Any static assets, like images, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Check out [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
-
-## Credit
-
-This theme is based off of the lovely [Bear Blog](https://github.com/HermanMartinus/bearblog/).
+当前测试与迁移说明见 [中文 README](../README_CN.md) 和 [CHANGELOG](../CHANGELOG.md)。

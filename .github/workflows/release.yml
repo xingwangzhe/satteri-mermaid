@@ -37,16 +37,25 @@ jobs:
     steps:
       - uses: actions/checkout@v7.0.1
 
+      - uses: actions/setup-node@v7.0.0
+        with:
+          node-version: "24"
+
       - uses: oven-sh/setup-bun@v2.2.0
         with:
           bun-version: latest
 
       - uses: actions-rust-lang/setup-rust-toolchain@v1.17.0
+        with:
+          toolchain: "1.95.0"
 
       - run: bun install --frozen-lockfile
 
       - name: Build napi (${{ matrix.target }})
-        run: bun x napi build --target ${{ matrix.target }} --platform --release --no-js
+        run: bun x napi build --target ${{ matrix.target }} --platform --release --no-js -- --locked
+
+      - name: Build JS and run integration tests
+        run: bun run build:vite && bun run build:tsc && bun run test
 
       - name: Upload .node artifact
         uses: actions/upload-artifact@v7.0.1
@@ -123,7 +132,7 @@ jobs:
 
       - name: Publish to npm
         if: inputs.dry-run != true
-        run: npm publish --provenance --access public
+        run: npm publish --ignore-scripts --provenance --access public
 
       - name: Create GitHub Release
         if: inputs.dry-run != true

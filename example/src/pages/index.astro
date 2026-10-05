@@ -1,48 +1,73 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import { getCollection } from 'astro:content';
+import { markdownToHtml } from "satteri";
+import { mermaidMdast, mermaidHast, supportedDiagrams } from "@xingwangzhe/satteri-mermaid";
+import type { ThemePreset } from "@xingwangzhe/satteri-mermaid";
+import { diagrams } from "../diagrams";
+import "../styles/global.css";
 
-const posts = await getCollection('posts');
-// Sort by publish date, newest first
-posts.sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
+const fence = (source: string) => `\`\`\`mermaid\n${source}\n\`\`\``;
+const render = async (source: string, theme: ThemePreset = "default") => {
+  const { html } = await markdownToHtml(fence(source), {
+    mdastPlugins: [mermaidMdast()],
+    hastPlugins: [mermaidHast({ theme })],
+  });
+  return html;
+};
+const gallery = await Promise.all(Object.entries(diagrams).map(async ([name, source]) => ({
+  name, source, html: await render(source),
+})));
+const themes: ThemePreset[] = ["default", "base", "dark", "forest", "neutral", "neo", "neo-dark",
+  "redux", "redux-dark", "redux-color", "redux-dark-color"];
+const themeGallery = await Promise.all(themes.map(async (theme) => ({
+  theme, html: await render(diagrams.flowchart, theme),
+})));
+const catalog = supportedDiagrams();
 ---
 
-<Layout title="Sätteri Mermaid 测试博客" description="展示 @xingwangzhe/satteri-mermaid 的各种 Mermaid 图表渲染效果">
-	<h2 style="border-bottom: none; margin-top: 0;">📝 文章列表</h2>
-	<ul class="post-list">
-		{posts.map(post => (
-			<li class="post-item">
-				<h2><a href={`/posts/${post.id}/`}>{post.data.title}</a></h2>
-				<p class="post-date">
-					{new Date(post.data.pubDate).toLocaleDateString('zh-CN', {
-						year: 'numeric', month: 'long', day: 'numeric',
-					})}
-				</p>
-				<p class="post-desc">{post.data.description}</p>
-				{post.data.tags.length > 0 && (
-					<div class="tags">
-						{post.data.tags.map(tag => <span class="tag">{tag}</span>)}
-					</div>
-				)}
-			</li>
-		))}
-	</ul>
-
-	<hr />
-
-	<section>
-		<h2>🎨 实时预览：Mermaid 流程图</h2>
-		<p>下面是一个直接在页面 Markdown 中渲染的 Mermaid 流程图：</p>
-
-```mermaid
-flowchart LR
-    A[Sätteri] -->|MDAST Plugin| B[检测代码块]
-    B --> C[mermaid-rs 渲染]
-    C --> D[静态 SVG]
-    D --> E[零 JS 输出]
-    E -->|HAST Plugin| F[最终 HTML]
-```
-
-		<p>✨ 上图在 <code>astro build</code> 时已渲染为静态内联 SVG，无需任何客户端 JavaScript。</p>
-	</section>
-</Layout>
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sätteri Mermaid · Merman 预览</title>
+    <meta name="description" content="使用包内置 SVG 样式预览 18 类 Mermaid 图表与 11 个主题。" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <p class="eyebrow">@xingwangzhe/satteri-mermaid</p>
+        <h1>Merman 图表预览</h1>
+        <p>真实调用 Sätteri 0.10.5 与 Merman 0.7.0。以下图表由包在构建时生成，直接使用 SVG 自带的 Mermaid 样式。</p>
+        <nav aria-label="页面导航"><a href="#diagrams">18 类图表</a><a href="#themes">11 个主题</a><a href="#catalog">引擎目录</a></nav>
+      </header>
+      <section id="diagrams" aria-labelledby="diagrams-title">
+        <h2 id="diagrams-title">图表效果</h2>
+        <p>默认主题；展开源代码可查看实际输入。这里只展示代表性语法。</p>
+        <div class="gallery">
+          {gallery.map(({ name, source, html }) => (
+            <article class="card">
+              <h3>{name}</h3>
+              <div class="diagram-output" set:html={html} />
+              <details><summary>Mermaid 源代码</summary><pre><code>{source}</code></pre></details>
+            </article>
+          ))}
+        </div>
+      </section>
+      <section id="themes" aria-labelledby="themes-title">
+        <h2 id="themes-title">包自带主题</h2>
+        <p>同一张流程图分别使用 11 个主题，页面不覆盖 SVG 内部的颜色、字体或线条。</p>
+        <div class="gallery themes">
+          {themeGallery.map(({ theme, html }) => (
+            <article class="card"><h3>{theme}</h3><div class="diagram-output" set:html={html} /></article>
+          ))}
+        </div>
+      </section>
+      <section id="catalog" aria-labelledby="catalog-title">
+        <h2 id="catalog-title">引擎目录</h2>
+        <p>{catalog.join(" · ")}</p>
+        <p>目录来自实际原生引擎；目录条目不代表所有 Mermaid 语法都经过验证。</p>
+      </section>
+      <footer>本地预览 · 静态 SVG · 无 Mermaid 客户端脚本</footer>
+    </main>
+  </body>
+</html>

@@ -1,7 +1,7 @@
 {
   "name": "@xingwangzhe/satteri-mermaid",
-  "version": "0.7.9",
-  "description": "Sätteri MDAST+HAST plugin: render Mermaid diagrams as static SVG at build time via mermaid-rs (napi-rs). 23 diagram types, zero client JS.",
+  "version": "0.8.0",
+  "description": "Sätteri MDAST+HAST plugin: render Mermaid diagrams as static SVG at build time via Merman (napi-rs), with zero client JS.",
   "keywords": [
     "astro-component",
     "astro-integration",
@@ -25,7 +25,11 @@
     "*.node",
     "index.cjs",
     "index.d.ts",
-    "package.json"
+    "package.json",
+    "THIRD_PARTY_NOTICES.md",
+    "README_CN.md",
+    "CHANGELOG.md",
+    "docs/configuration*.md"
   ],
   "type": "module",
   "main": "./dist/index.mjs",
@@ -34,8 +38,7 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.cjs"
+      "import": "./dist/index.mjs"
     }
   },
   "publishConfig": {
@@ -43,33 +46,37 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "dev": "cd example && bun run dev",
-    "build:napi": "napi build --platform --release --no-js",
+    "dev": "bun run build:debug && bun install --cwd example --frozen-lockfile && node scripts/link-example.mjs && cd example && bun run dev",
+    "build:napi": "napi build --platform --release --no-js -- --locked && oxfmt index.d.ts",
     "build:vite": "vite build",
     "build:tsc": "tsc --emitDeclarationOnly --declarationDir dist",
     "build": "bun run build:napi && bun run build:vite && bun run build:tsc",
-    "build:debug": "napi build --platform --no-js && vite build && tsc --emitDeclarationOnly --declarationDir dist",
-    "build:example": "cd example && bun run build",
+    "build:debug": "napi build --platform --no-js -- --locked && oxfmt index.d.ts && vite build && tsc --emitDeclarationOnly --declarationDir dist",
+    "build:example": "bun install --cwd example --frozen-lockfile && node scripts/link-example.mjs && cd example && bun run build",
     "test": "vitest run",
     "test:watch": "vitest",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
     "lint": "oxlint src test",
     "lint:fix": "oxlint --fix src test",
-    "prepublishOnly": "bun run build"
+    "prepublishOnly": "bun run build",
+    "typecheck": "tsc --project tsconfig.test.json",
+    "preview": "bun run build:debug && bun run build:example && cd example && bun run preview",
+    "preview:stop": "cd example && bun run preview:stop"
   },
   "devDependencies": {
     "@napi-rs/cli": "^3.10.5",
     "@types/node": "^26.6.2",
     "oxfmt": "^0.70.0",
     "oxlint": "^1.85.0",
-    "satteri": "^0.10.5",
+    "satteri": "0.10.5",
+    "saxes": "6.0.0",
     "typescript": "^7.0.2",
     "vite": "^8.3.0",
     "vitest": "^5.0.1"
   },
   "peerDependencies": {
-    "satteri": ">=0.8.0"
+    "satteri": ">=0.10.5 <0.11.0"
   },
   "napi": {
     "binaryName": "mermaid-rs",
@@ -81,6 +88,6 @@
     ]
   },
   "engines": {
-    "node": ">= 18.17.0"
+    "node": ">=22.14.0"
   }
 }

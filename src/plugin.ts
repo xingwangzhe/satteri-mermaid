@@ -1,5 +1,6 @@
-import { defineMdastPlugin, defineHastPlugin } from "satteri";
+import { defineMdastPlugin, defineHastPlugin, htmlToHast } from "satteri";
 import type { MdastPluginDefinition, HastPluginDefinition } from "satteri";
+import type { MdxJsxFlowElementHast, MdxJsxTextElementHast, HastVisitorContext } from "satteri";
 import { renderMermaidSVG } from "./renderer";
 
 const DATA_KEY = "__satteri_mermaid_codes";
@@ -10,10 +11,22 @@ export interface MermaidFlags {
   hasMermaid: boolean;
 }
 
-/** mermaid-rs 主题预设 */
-export type ThemePreset = "modern" | "dark" | "default" | "forest" | "neutral";
+/** Merman/Mermaid themes; modern is a compatibility alias for default. */
+export type ThemePreset =
+  | "modern"
+  | "base"
+  | "dark"
+  | "default"
+  | "forest"
+  | "neutral"
+  | "neo"
+  | "neo-dark"
+  | "redux"
+  | "redux-dark"
+  | "redux-color"
+  | "redux-dark-color";
 
-/** 逐色覆盖项（映射到 mermaid-rs Theme 字段） */
+/** 逐色覆盖项（映射到 Mermaid themeVariables；各图表支持的变量由 Merman 决定） */
 export interface ThemeOverrides {
   // 排版
   fontFamily?: string;
@@ -107,6 +120,16 @@ export interface ThemeOverrides {
 }
 
 export interface MermaidPluginOptions {
+  /** Full Mermaid/Merman site configuration. */
+  siteConfig?: Record<string, unknown>;
+  /** Mermaid theme-variable overrides, taking precedence over legacy themeOverrides. */
+  themeVariables?: Record<string, unknown>;
+  themeCSS?: string;
+  scopedCSS?: string;
+  viewportWidth?: number;
+  viewportHeight?: number;
+  /** Explicit render failure policy; default throw prevents silently missing diagrams. */
+  onError?: "throw" | "warn-and-code" | "code";
   /** 要匹配的代码块语言标识，默认 ["mermaid"] */
   langs?: string[];
 
@@ -120,10 +143,10 @@ export interface MermaidPluginOptions {
    */
   ssg?: boolean;
 
-  /** 主题预设，默认 "modern" */
+  /** 主题预设，默认 "default" */
   theme?: ThemePreset;
 
-  /** 逐色覆盖预设中的颜色（支持 CSS 变量） */
+  /** 兼容旧版逐色选项；CSS 变量能否影响布局取决于上游实现 */
   themeOverrides?: ThemeOverrides;
 
   // ── 排版 ────────────────────────────────────────────────────
@@ -133,11 +156,11 @@ export interface MermaidPluginOptions {
   fontSize?: number;
 
   // ── 布局 ────────────────────────────────────────────────────
-  /** 节点垂直间距 (px) */
+  /** 同层节点间距 (px) */
   nodeSpacing?: number;
-  /** 层级水平间距 (px) */
+  /** 层级间距 (px) */
   rankSpacing?: number;
-  /** 首选宽高比（如 1.778 = 16:9） */
+  /** @deprecated Merman 不支持此选项，传入会抛错；使用 viewportWidth/viewportHeight */
   preferredAspectRatio?: number;
 
   // ── 渲染 ────────────────────────────────────────────────────
@@ -166,6 +189,11 @@ export function createMermaidMdastPlugin(options?: MermaidPluginOptions): {
 
   const plugin = defineMdastPlugin({
     name: "satteri-mermaid-mdast",
+
+    before() {
+      reset();
+      flush();
+    },
 
     yaml() {
       reset();
@@ -239,11 +267,16 @@ export function createMermaidMdastPlugin(options?: MermaidPluginOptions): {
 // ── HAST Plugin ───────────────────────────────────────────────────
 
 /**
- * 将 MermaidPluginOptions 转换为 mermaid-rs render() 所需的对象。
- * JS camelCase → Rust snake_case 映射。
+ * 将插件配置转换为 Merman 适配层选项；旧版颜色在 renderer.ts 中映射。
  */
 function buildRenderOptions(opts?: MermaidPluginOptions): Record<string, unknown> {
   const r: Record<string, unknown> = {};
+  if (opts?.siteConfig) r.siteConfig = opts.siteConfig;
+  if (opts?.themeVariables) r.themeVariables = opts.themeVariables;
+  if (opts?.themeCSS != null) r.themeCSS = opts.themeCSS;
+  if (opts?.scopedCSS != null) r.scopedCSS = opts.scopedCSS;
+  if (opts?.viewportWidth != null) r.viewportWidth = opts.viewportWidth;
+  if (opts?.viewportHeight != null) r.viewportHeight = opts.viewportHeight;
 
   // 主题预设
   if (opts?.theme) r.theme = opts.theme;
@@ -398,12 +431,36 @@ export function createMermaidHastPlugin(options?: MermaidPluginOptions): {
       visit(node, ctx) {
         const cls = node.properties?.className;
         if (!Array.isArray(cls) || !cls.includes("mermaid")) return;
-        const text = (node.children?.[0] as any)?.value;
+        const id = node.properties?.["data-mermaid-id"] ?? node.properties?.dataMermaidId;
+        const bag = ctx.data?.[DATA_KEY] as Record<string, string> | undefined;
+        const preserved = typeof id === "string" ? bag?.[id] : undefined;
+        const text = preserved ?? ctx.textContent(node);
         if (!text) return;
         replaceWithSVG(node, text, ctx);
       },
     },
+
+    mdxJsxFlowElement: { filter: ["pre"], visit: replaceMdxPlaceholder },
+    mdxJsxTextElement: { filter: ["pre"], visit: replaceMdxPlaceholder },
   });
+
+  function replaceMdxPlaceholder(
+    node: Readonly<MdxJsxFlowElementHast | MdxJsxTextElementHast>,
+    ctx: HastVisitorContext,
+  ) {
+    if (node.name !== "pre") return;
+    const attributes = Object.fromEntries(
+      node.attributes.flatMap((attribute) =>
+        attribute.type === "mdxJsxAttribute" && typeof attribute.value === "string"
+          ? [[attribute.name, attribute.value]]
+          : [],
+      ),
+    );
+    if (!(attributes.class ?? attributes.className ?? "").split(/\s+/).includes("mermaid")) return;
+    const bag = ctx.data[DATA_KEY] as Record<string, string> | undefined;
+    const code = bag?.[attributes["data-mermaid-id"]] ?? ctx.textContent(node);
+    if (code) replaceWithSVG(node, code, ctx);
+  }
 
   function replaceWithSVG(node: any, code: string, ctx: any) {
     if (!ssg) {
@@ -420,15 +477,30 @@ export function createMermaidHastPlugin(options?: MermaidPluginOptions): {
       const renderOpts = buildRenderOptions(options);
       const svgRaw = renderMermaidSVG(code.trim(), renderOpts);
       const svg = responsive
-        ? svgRaw
-            .replace(/\b(width|height)="[^"]*"/g, "")
-            .replace(/ style="([^"]+)"/, (_, inner) => ` style="width:100%;display:block;${inner}"`)
+        ? svgRaw.replace(/<svg\b([^>]*)>/, (_, attributes: string) => {
+            const withoutSize = attributes.replace(/\s(?:width|height)="[^"]*"/g, "");
+            const styleMatch = withoutSize.match(/\sstyle="([^"]*)"/);
+            const style = `width:100%;display:block;${styleMatch?.[1] ?? ""}`;
+            return `<svg${withoutSize.replace(/\sstyle="[^"]*"/, "")} style="${style}">`;
+          })
         : svgRaw;
-      ctx.replaceNode(node, {
-        type: "raw",
-        value: `<div class="mermaid" data-mermaid-ssg="true" style="${wrapperStyle}">${svg}</div>`,
-      });
-    } catch {
+      const markup = `<div class="mermaid" data-mermaid-ssg="true" style="${wrapperStyle}">${svg}</div>`;
+      if (ctx.sourceFormat === "mdx") {
+        const tree = htmlToHast(markup, { fragment: true });
+        if (tree.type !== "root") throw new Error("Expected an HTML fragment root");
+        ctx.replaceNode(node, tree.children);
+      } else {
+        ctx.replaceNode(node, { type: "raw", value: markup });
+      }
+    } catch (error) {
+      const policy = options?.onError ?? "throw";
+      if (policy === "throw") throw error;
+      if (policy === "warn-and-code") {
+        const message = `Mermaid rendering failed: ${error instanceof Error ? error.message : String(error)}`;
+        ctx.report({ message, severity: "warning", node });
+        // Sätteri 0.10.5 does not return visitor diagnostics in compile results.
+        console.warn(message);
+      }
       ctx.replaceNode(node, {
         type: "element",
         tagName: "pre",

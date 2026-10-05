@@ -7,7 +7,6 @@ dist/
 
 # Rust
 target/
-Cargo.lock
 
 # bun
 bun.toml
@@ -23,3 +22,15 @@ Thumbs.db
 # Misc
 *.tgz
 .cargo/
+
+# Astro / test / tool caches
+.astro/
+.vite/
+.vitest/
+coverage/
+*.log
+
+# Local environment (keep distributable examples)
+.env
+.env.*
+!.env.example

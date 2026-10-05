@@ -15,7 +15,7 @@ describe("mermaid() factory (deprecated mdast shortcut)", () => {
       {} as any,
     );
     expect(result).toHaveProperty("rawHtml");
-    expect(result?.rawHtml).toContain('class="mermaid"');
+    expect(result && "rawHtml" in result ? result.rawHtml : undefined).toContain('class="mermaid"');
   });
 
   it("supports custom langs", () => {
@@ -42,7 +42,7 @@ describe("mermaidPlugin (default instance)", () => {
       {} as any,
     );
     expect(result).toHaveProperty("rawHtml");
-    expect(result?.rawHtml).toContain("data-mermaid-id");
+    expect(result && "rawHtml" in result ? result.rawHtml : undefined).toContain("data-mermaid-id");
   });
 
   it("returns undefined for non-mermaid code blocks", () => {

@@ -19,6 +19,7 @@ jobs:
 
       - uses: actions-rust-lang/setup-rust-toolchain@v1.17.0
         with:
+          toolchain: "1.95.0"
           components: clippy, rustfmt
 
       - run: bun install --frozen-lockfile
@@ -33,11 +34,25 @@ jobs:
         run: cargo fmt -- --check
 
       - name: Clippy (Rust)
-        run: cargo clippy
+        run: cargo clippy --locked -- -D warnings
 
   test:
-    name: Test
-    runs-on: ubuntu-latest
+    name: Test (${{ matrix.os }}, Node ${{ matrix.node }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            node: "22.14.0"
+          - os: ubuntu-latest
+            node: "24"
+          - os: ubuntu-24.04-arm
+            node: "24"
+          - os: macos-latest
+            node: "24"
+          - os: windows-latest
+            node: "24"
     steps:
       - uses: actions/checkout@v7.0.1
 
@@ -45,12 +60,25 @@ jobs:
         with:
           bun-version: latest
 
+      - uses: actions/setup-node@v7.0.0
+        with:
+          node-version: ${{ matrix.node }}
+
       - uses: actions-rust-lang/setup-rust-toolchain@v1.17.0
+        with:
+          toolchain: "1.95.0"
 
       - run: bun install --frozen-lockfile
 
       - name: Build napi (debug)
         run: bun run build:debug
 
+      - name: Check TypeScript (source and tests)
+        run: bun run typecheck
+
       - name: Run tests (vitest)
         run: bun run test
+
+      - name: Build example using the local package
+        if: matrix.os == 'ubuntu-latest' && matrix.node == '24'
+        run: bun run build:example
