@@ -32,6 +32,32 @@ describe("Merman native renderer", () => {
       expect(svg).toContain(label);
     }
   });
+  it("preserves Unicode flowchart IDs in nested subgraphs and styled links", () => {
+    const svg = renderMermaidSVG(
+      `flowchart TD
+    subgraph 合作体[合作体-聚合实体]
+        direction LR
+        subgraph 子团队1[子团队1]
+            大学
+            研究所
+        end
+        subgraph 子团队2[子团队2]
+            公司
+        end
+    end
+    项目[项目]
+    子团队1 -->|子管理| 项目
+    子团队2 -->|子管理| 项目
+    项目 --> 完成[项目完成]
+    style 合作体 fill:#ffeaa7
+    style 项目 fill:#74b9ff`,
+      fixed,
+    );
+    parseSvg(svg);
+    for (const label of ["大学", "研究所", "公司", "项目完成", "子管理"])
+      expect(svg).toContain(label);
+    expect(svg).toContain("#74b9ff");
+  });
   it("exposes the engine catalog and includes xychart", () => {
     const catalog = supportedDiagrams();
     expect(catalog).toContain("xychart");

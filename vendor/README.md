@@ -5,3 +5,5 @@
 Local change: in `src/diagrams/er.rs`, use `str::get` when checking the two-byte ASCII PK/FK/UK token. Slicing two bytes can split a UTF-8 attribute name (for example 学号), which panics and can abort the native host. A non-boundary range now cannot match an ASCII key; normal Unicode attribute lexing proceeds unchanged.
 
 Regression: `test/renderer.test.ts` renders Chinese ER entities, fields, keys and relationship labels. Remove this patch after adopting an upstream release with the fix.
+
+In `src/diagrams/flowchart/lexer.rs`, `lex_id` scans Unicode alphanumeric characters by their UTF-8 width. This preserves Chinese bare node identifiers, including nested subgraphs and style targets, rather than requiring articles to replace IDs. The second regression uses a real nested Chinese flowchart from myblog.

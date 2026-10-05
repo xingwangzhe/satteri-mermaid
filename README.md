@@ -108,7 +108,7 @@ cargo clippy --locked -- -D warnings
 bun run build
 ```
 
-`Cargo.lock` and `bun.lock` are committed; native builds use `--locked`. The current suite has **84 passing tests and one upstream TODO**, verified locally on Linux x64 with Node 22.14.0 and 24.21.0 against the release build. Tests exercise 18 diagram families through the real renderer, XML validity, finite output, 11 themes, visible configuration effects, ID isolation, error policies, Markdown and MDX compilation, responsive shape preservation, and package imports in separate Node processes. They are representative coverage, not an exhaustive upstream conformance suite. CI tests all four release platforms and the minimum Node version; release jobs run tests against the native release artifacts before publication.
+`Cargo.lock` and `bun.lock` are committed; native builds use `--locked`. The current suite has **85 passing tests and one upstream TODO**, verified locally on Linux x64 with Node 22.14.0 and 24.21.0 against the release build. Tests exercise 18 diagram families through the real renderer, XML validity, finite output, 11 themes, visible configuration effects, ID isolation, error policies, Markdown and MDX compilation, responsive shape preservation, and package imports in separate Node processes. They are representative coverage, not an exhaustive upstream conformance suite. CI tests all four release platforms and the minimum Node version; release jobs run tests against the native release artifacts before publication.
 
 Licensed under MIT. Merman is a separate dependency licensed under MIT OR Apache-2.0. See the [Merman source](https://github.com/Latias94/merman) and [Sätteri source](https://github.com/bruits/satteri) for upstream behavior and licenses.
 

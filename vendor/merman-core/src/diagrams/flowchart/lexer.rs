@@ -541,11 +541,11 @@ impl<'input> Lexer<'input> {
         if start >= bytes.len() {
             return None;
         }
-        let first = bytes[start];
-        if !first.is_ascii_alphanumeric() && first != b'_' {
+        let first = self.input[start..].chars().next()?;
+        if !first.is_alphanumeric() && first != '_' {
             return None;
         }
-        self.pos += 1;
+        self.pos += first.len_utf8();
 
         while self.pos < bytes.len() {
             if self.pos + 1 < bytes.len()
@@ -553,6 +553,11 @@ impl<'input> Lexer<'input> {
                     || bytes[self.pos] == b'=' && bytes[self.pos + 1] == b'=')
             {
                 break;
+            }
+            let ch = self.input[self.pos..].chars().next()?;
+            if !ch.is_ascii() && ch.is_alphanumeric() {
+                self.pos += ch.len_utf8();
+                continue;
             }
             let b = bytes[self.pos];
             if b.is_ascii_alphanumeric() || b == b'_' {

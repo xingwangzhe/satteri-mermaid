@@ -108,7 +108,7 @@ cargo clippy --locked -- -D warnings
 bun run build
 ```
 
-提交 `Cargo.lock` 与 `bun.lock`，原生构建使用 `--locked`。当前测试集为 **84 项通过、1 项上游问题 TODO**，已在 Linux x64、Node 22.14.0 与 24.21.0 下使用 release 产物验证。测试覆盖 18 类图表的实际渲染、XML 合法性、有限数值、11 个主题、配置的可观察效果、ID 隔离、错误策略、Markdown/MDX 编译、自适应模式内部图形尺寸，以及独立 Node 进程中的包入口。这是代表性覆盖，不是完整的上游一致性测试。CI 配置覆盖四种发布平台及最低 Node 版本，发布任务会先测试原生 release 产物。
+提交 `Cargo.lock` 与 `bun.lock`，原生构建使用 `--locked`。当前测试集为 **85 项通过、1 项上游问题 TODO**，已在 Linux x64、Node 22.14.0 与 24.21.0 下使用 release 产物验证。测试覆盖 18 类图表的实际渲染、XML 合法性、有限数值、11 个主题、配置的可观察效果、ID 隔离、错误策略、Markdown/MDX 编译、自适应模式内部图形尺寸，以及独立 Node 进程中的包入口。这是代表性覆盖，不是完整的上游一致性测试。CI 配置覆盖四种发布平台及最低 Node 版本，发布任务会先测试原生 release 产物。
 
 本项目使用 MIT 许可证。Merman 是独立依赖，许可证为 MIT OR Apache-2.0。上游行为和许可证请参见 [Merman 源码](https://github.com/Latias94/merman)及 [Sätteri 源码](https://github.com/bruits/satteri)。
 
