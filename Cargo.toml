@@ -24,3 +24,6 @@ napi-build = "2.5.0"
 [profile.release]
 lto = true
 strip = "symbols"
+
+[patch.crates-io]
+merman-core = { path = "vendor/merman-core" }

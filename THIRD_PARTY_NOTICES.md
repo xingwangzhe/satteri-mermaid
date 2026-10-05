@@ -35,3 +35,7 @@ SOFTWARE.
 Sätteri is a separately distributed npm peer dependency under the MIT license.
 Its own license and attribution remain with that dependency.
 Upstream: https://github.com/bruits/satteri
+
+## Local Merman core patch
+
+Version 0.8.1 builds `merman-core` 0.7.0 with the UTF-8 ER lexer fix documented in `vendor/README.md`. The vendored source preserves its upstream MIT and Apache-2.0 license files; this binary distribution uses the MIT option stated above.

@@ -13,6 +13,25 @@ describe("Merman native renderer", () => {
     expect(elements.length).toBeGreaterThan(2);
     expect(svg).not.toMatch(/(?:NaN|Infinity)/);
   });
+  it("renders Chinese ER entities and attributes without a native panic", () => {
+    const svg = renderMermaidSVG(
+      `erDiagram
+      学生 {
+        int 学号 PK
+        string 姓名
+      }
+      课程 {
+        int 课程号 PK
+        string 课程名
+      }
+      学生 ||--o{ 课程 : 选课`,
+      fixed,
+    );
+    parseSvg(svg);
+    for (const label of ["学生", "学号", "姓名", "课程", "课程号", "课程名", "选课"]) {
+      expect(svg).toContain(label);
+    }
+  });
   it("exposes the engine catalog and includes xychart", () => {
     const catalog = supportedDiagrams();
     expect(catalog).toContain("xychart");

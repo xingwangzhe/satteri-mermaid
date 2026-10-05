@@ -1,6 +1,6 @@
 # Configuration and themes
 
-This reference describes `@xingwangzhe/satteri-mermaid@0.8.0`, Merman 0.7.0, and Sätteri 0.10.5. Register both `mermaidMdast()` and `mermaidHast()`. Use `renderMermaidSVG()` for direct rendering. [中文](./configuration.zh-CN.md)
+This reference describes `@xingwangzhe/satteri-mermaid@0.8.1`, Merman 0.7.0, and Sätteri 0.10.5. Register both `mermaidMdast()` and `mermaidHast()`. Use `renderMermaidSVG()` for direct rendering. [中文](./configuration.zh-CN.md)
 
 ## Theme names
 

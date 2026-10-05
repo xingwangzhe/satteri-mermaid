@@ -1,6 +1,6 @@
 # 配置项与主题
 
-本说明对应 `@xingwangzhe/satteri-mermaid@0.8.0`、Merman 0.7.0 和 Sätteri 0.10.5。注册 `mermaidMdast()` 与 `mermaidHast()` 两个插件；直接渲染则调用 `renderMermaidSVG()`。
+本说明对应 `@xingwangzhe/satteri-mermaid@0.8.1`、Merman 0.7.0 和 Sätteri 0.10.5。注册 `mermaidMdast()` 与 `mermaidHast()` 两个插件；直接渲染则调用 `renderMermaidSVG()`。
 
 ## 主题名称
 

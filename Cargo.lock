@@ -1020,8 +1020,6 @@ dependencies = [
 [[package]]
 name = "merman-core"
 version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4b7ca468603ca22bad2578b3d3fbc0b436e28b5ccb726e2cf99d7bb75fa8c167"
 dependencies = [
  "chrono",
  "euclid",

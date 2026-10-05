@@ -4,10 +4,10 @@ Render Mermaid fences to inline SVG during a Sätteri build. The backend uses th
 
 [中文文档](./README_CN.md)
 
-This document describes **version 0.8.0**, with the Merman native backend. See the [complete configuration and theme reference](./docs/configuration.md) and [changelog](./CHANGELOG.md).
+This document describes **version 0.8.1**, with the Merman native backend. See the [complete configuration and theme reference](./docs/configuration.md) and [changelog](./CHANGELOG.md).
 
 ```sh
-bun add @xingwangzhe/satteri-mermaid@0.8.0 satteri@0.10.5
+bun add @xingwangzhe/satteri-mermaid@0.8.1 satteri@0.10.5
 ```
 
 Use Node.js **22.14.0 or newer** (the binding uses Node-API 10). The package exposes an **ES module** entry point. Native build targets are Linux x64/arm64 with glibc, macOS arm64, and Windows x64. Other platforms need a compatible source build; macOS x64, Windows arm64, and Linux musl binaries are not supplied by this repository's release matrix.
@@ -108,8 +108,10 @@ cargo clippy --locked -- -D warnings
 bun run build
 ```
 
-`Cargo.lock` and `bun.lock` are committed; native builds use `--locked`. The current suite has **83 passing tests and one upstream TODO**, verified locally on Linux x64 with Node 22.14.0 and 24.21.0 against the release build. Tests exercise 18 diagram families through the real renderer, XML validity, finite output, 11 themes, visible configuration effects, ID isolation, error policies, Markdown and MDX compilation, responsive shape preservation, and package imports in separate Node processes. They are representative coverage, not an exhaustive upstream conformance suite. CI tests all four release platforms and the minimum Node version; release jobs run tests against the native release artifacts before publication.
+`Cargo.lock` and `bun.lock` are committed; native builds use `--locked`. The current suite has **84 passing tests and one upstream TODO**, verified locally on Linux x64 with Node 22.14.0 and 24.21.0 against the release build. Tests exercise 18 diagram families through the real renderer, XML validity, finite output, 11 themes, visible configuration effects, ID isolation, error policies, Markdown and MDX compilation, responsive shape preservation, and package imports in separate Node processes. They are representative coverage, not an exhaustive upstream conformance suite. CI tests all four release platforms and the minimum Node version; release jobs run tests against the native release artifacts before publication.
 
 Licensed under MIT. Merman is a separate dependency licensed under MIT OR Apache-2.0. See the [Merman source](https://github.com/Latias94/merman) and [Sätteri source](https://github.com/bruits/satteri) for upstream behavior and licenses.
 
 The project [LICENSE](./LICENSE) remains MIT, Copyright (c) 2026 王兴家. The Merman MIT notice is preserved separately in [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md), which is included in the npm package.
+
+0.8.1 patches the Merman 0.7.0 ER lexer to avoid splitting UTF-8 attribute names while checking PK/FK/UK. See `vendor/README.md` for provenance and scope. Rust panics become render errors at the N-API boundary; the default error policy still fails the build.

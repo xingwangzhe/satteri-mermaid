@@ -32,6 +32,11 @@ pub fn supported_diagrams() -> Vec<String> {
 /// Synchronous SVG rendering via the published Merman Rust facade.
 #[napi]
 pub fn render(code: String, opts: Option<RenderOptions>) -> napi::Result<String> {
+  std::panic::catch_unwind(|| render_inner(code, opts))
+    .unwrap_or_else(|_| Err(napi::Error::from_reason("Merman renderer panicked")))
+}
+
+fn render_inner(code: String, opts: Option<RenderOptions>) -> napi::Result<String> {
   let id = format!(
     "satteri-mermaid-{}",
     NEXT_ID.fetch_add(1, Ordering::Relaxed)

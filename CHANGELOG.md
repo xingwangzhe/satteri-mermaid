@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.1 — 2026-10-05
+
+- Patch the Merman 0.7.0 ER lexer so Chinese attribute names do not panic when checking ASCII key tokens. Preserve the upstream source and licenses under `vendor/merman-core`.
+- Catch unwinding Rust panics at the N-API boundary and return a render error.
+- Add a real Chinese ER diagram regression: 84 passing tests and one upstream TODO.
+
 ## 0.8.0 — 2026-10-05
 
 Migrate the native backend to Merman and update the tested Sätteri integration.
