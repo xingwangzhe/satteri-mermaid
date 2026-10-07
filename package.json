@@ -62,7 +62,9 @@
     "prepublishOnly": "bun run build",
     "typecheck": "tsc --project tsconfig.test.json",
     "preview": "bun run build:debug && bun run build:example && cd example && bun run preview",
-    "preview:stop": "cd example && bun run preview:stop"
+    "preview:stop": "cd example && bun run preview:stop",
+    "build:pgo": "node scripts/build-pgo.mjs",
+    "benchmark:pgo": "node scripts/build-pgo.mjs --compare"
   },
   "devDependencies": {
     "@napi-rs/cli": "^3.10.5",

@@ -115,3 +115,7 @@ bun run build
 项目 [LICENSE](./LICENSE) 保持 MIT，版权署名为 Copyright (c) 2026 王兴家。Merman 的 MIT 声明另存于 [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md)，并随 npm 包分发。
 
 0.8.1 包含一个针对 Merman 0.7.0 的中文 ER 图解析修复：PK/FK/UK 检查不再切断 UTF-8 字符。修补来源和范围见 `vendor/README.md`。Rust panic 会转换为渲染错误，避免越过 N-API 边界；默认仍会阻止构建。
+
+## Runtime-focused native release builds
+
+CI release binaries use O3, full LTO, one code-generation unit, and disabled incremental compilation. CI trains and measures a profile-guided optimization (PGO) candidate on each platform, selecting it only when the comparison passes; otherwise it publishes the unprofiled release. The existing CPU instruction baseline is preserved. Use `bun run build:pgo` for the optimized native build and `bun run benchmark:pgo` for a comparison against an unprofiled release. Install the matching LLVM tools with `rustup component add llvm-tools-preview`. Training inputs, measurement limits, and platform requirements are documented in [scripts/PERFORMANCE.md](scripts/PERFORMANCE.md).

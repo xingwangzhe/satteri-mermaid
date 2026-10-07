@@ -115,3 +115,7 @@ Licensed under MIT. Merman is a separate dependency licensed under MIT OR Apache
 The project [LICENSE](./LICENSE) remains MIT, Copyright (c) 2026 王兴家. The Merman MIT notice is preserved separately in [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md), which is included in the npm package.
 
 0.8.1 patches the Merman 0.7.0 ER lexer to avoid splitting UTF-8 attribute names while checking PK/FK/UK. See `vendor/README.md` for provenance and scope. Rust panics become render errors at the N-API boundary; the default error policy still fails the build.
+
+## Runtime-focused native release builds
+
+CI release binaries use O3, full LTO, one code-generation unit, and disabled incremental compilation. CI trains and measures a profile-guided optimization (PGO) candidate on each platform, selecting it only when the comparison passes; otherwise it publishes the unprofiled release. The existing CPU instruction baseline is preserved. Use `bun run build:pgo` for the optimized native build and `bun run benchmark:pgo` for a comparison against an unprofiled release. Install the matching LLVM tools with `rustup component add llvm-tools-preview`. Training inputs, measurement limits, and platform requirements are documented in [scripts/PERFORMANCE.md](scripts/PERFORMANCE.md).

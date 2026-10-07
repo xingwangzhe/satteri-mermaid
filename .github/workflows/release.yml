@@ -48,14 +48,24 @@ jobs:
       - uses: actions-rust-lang/setup-rust-toolchain@v1.17.0
         with:
           toolchain: "1.95.0"
+          components: llvm-tools-preview
 
       - run: bun install --frozen-lockfile
 
       - name: Build napi (${{ matrix.target }})
-        run: bun x napi build --target ${{ matrix.target }} --platform --release --no-js -- --locked
+        run: bun run build:pgo --select --target ${{ matrix.target }}
 
       - name: Build JS and run integration tests
         run: bun run build:vite && bun run build:tsc && bun run test
+
+      - name: Upload PGO build record
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: pgo-${{ matrix.target }}
+          path: |
+            target/pgo/${{ matrix.target }}/build.json
+            target/pgo/${{ matrix.target }}/benchmark.json
+          if-no-files-found: error
 
       - name: Upload .node artifact
         uses: actions/upload-artifact@v7.0.1
