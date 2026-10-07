@@ -4,10 +4,10 @@ Render Mermaid fences to inline SVG during a Sätteri build. The backend uses th
 
 [中文文档](./README_CN.md)
 
-This document describes **version 0.8.1**, with the Merman native backend. See the [complete configuration and theme reference](./docs/configuration.md) and [changelog](./CHANGELOG.md).
+This document describes **version 0.8.2**, with the Merman native backend. See the [complete configuration and theme reference](./docs/configuration.md) and [changelog](./CHANGELOG.md).
 
 ```sh
-bun add @xingwangzhe/satteri-mermaid@0.8.1 satteri@0.10.5
+bun add @xingwangzhe/satteri-mermaid@0.8.2 satteri@0.10.5
 ```
 
 Use Node.js **22.14.0 or newer** (the binding uses Node-API 10). The package exposes an **ES module** entry point. Native build targets are Linux x64/arm64 with glibc, macOS arm64, and Windows x64. Other platforms need a compatible source build; macOS x64, Windows arm64, and Linux musl binaries are not supplied by this repository's release matrix.

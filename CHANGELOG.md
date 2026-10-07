@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.8.2 — 2026-10-07
+
+- Build native release candidates with O3, fat LTO, one code-generation unit, and disabled incremental compilation.
+- Train PGO from 18 diagram families plus Chinese ER, nested Unicode flowchart IDs, and larger flowcharts.
+- Compare unprofiled and PGO candidates on each native runner; publish the PGO candidate only when the runtime comparison passes. Preserve CPU compatibility and panic unwinding.
+- Upload per-platform build and benchmark records; test the selected native binary before publishing.
+
 ## 0.8.1 — 2026-10-05
 
 - Patch the Merman 0.7.0 ER lexer so Chinese attribute names do not panic when checking ASCII key tokens. Preserve the upstream source and licenses under `vendor/merman-core`.

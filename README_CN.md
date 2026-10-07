@@ -4,10 +4,10 @@
 
 [English](./README.md)
 
-本文对应 **0.8.1 版本**，后端为 Merman 原生渲染器。全部配置、11 个主题预设、兼容别名及颜色映射见 [配置与主题说明](./docs/configuration.zh-CN.md)，改动记录见 [CHANGELOG](./CHANGELOG.md)。
+本文对应 **0.8.2 版本**，后端为 Merman 原生渲染器。全部配置、11 个主题预设、兼容别名及颜色映射见 [配置与主题说明](./docs/configuration.zh-CN.md)，改动记录见 [CHANGELOG](./CHANGELOG.md)。
 
 ```sh
-bun add @xingwangzhe/satteri-mermaid@0.8.1 satteri@0.10.5
+bun add @xingwangzhe/satteri-mermaid@0.8.2 satteri@0.10.5
 ```
 
 要求 **Node.js 22.14.0 或更新版本**，原生绑定使用 Node-API 10。包入口为 **ES 模块**。发布矩阵提供 Linux glibc x64/arm64、macOS arm64、Windows x64 原生构建；其他平台需要自行构建兼容二进制。当前不提供 macOS x64、Windows arm64、Linux musl 二进制。
