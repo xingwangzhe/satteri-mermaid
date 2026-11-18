@@ -1,0 +1,40 @@
+{
+  "name": "@xingwangzhe/satteri-mermaid-darwin-arm64",
+  "version": "0.8.4",
+  "cpu": [
+    "arm64"
+  ],
+  "main": "mermaid-rs.darwin-arm64.node",
+  "files": [
+    "mermaid-rs.darwin-arm64.node"
+  ],
+  "description": "Sätteri MDAST+HAST plugin: render Mermaid diagrams as static SVG at build time via Merman (napi-rs), with zero client JS.",
+  "keywords": [
+    "astro-component",
+    "astro-integration",
+    "diagram",
+    "markdown",
+    "mdast",
+    "mermaid",
+    "plugin",
+    "renderer",
+    "satteri"
+  ],
+  "author": "xingwangzhe",
+  "homepage": "https://github.com/xingwangzhe/satteri-mermaid#readme",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.14.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xingwangzhe/satteri-mermaid"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "os": [
+    "darwin"
+  ]
+}

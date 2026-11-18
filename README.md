@@ -4,13 +4,15 @@ Render Mermaid fences to inline SVG during a Sätteri build. The backend uses th
 
 [中文文档](./README_CN.md)
 
-This document describes **version 0.8.3**, with the Merman native backend. See the [complete configuration and theme reference](./docs/configuration.md) and [changelog](./CHANGELOG.md).
+This document describes **version 0.8.4**, with the Merman native backend. See the [complete configuration and theme reference](./docs/configuration.md) and [changelog](./CHANGELOG.md).
 
 ```sh
-bun add @xingwangzhe/satteri-mermaid@0.8.3 satteri@0.10.5
+bun add @xingwangzhe/satteri-mermaid@0.8.4 satteri@0.10.5
 ```
 
 Use Node.js **22.14.0 or newer** (the binding uses Node-API 10). The package exposes an **ES module** entry point. Native build targets are Linux x64/arm64 with glibc, macOS arm64, and Windows x64. Other platforms need a compatible source build; macOS x64, Windows arm64, and Linux musl binaries are not supplied by this repository's release matrix.
+
+The root npm package contains the ESM plugin and renderer. CI publishes each native binding as a scoped platform package, and npm installs only the matching optional dependency.
 
 ````ts
 import { markdownToHtml } from "satteri";
@@ -80,7 +82,7 @@ Migration from the previous mermaid-rs-renderer backend:
 - The rendering engine, layouts, fonts, default theme, and generated SVG may change. Review representative diagrams before upgrading a production site.
 - `preferredAspectRatio` is unsupported by Merman and now raises an error. Consider viewport dimensions or container CSS; they have different semantics.
 - Rendering failures throw by default. Choose a fallback policy explicitly if preserving source code is appropriate.
-- `require()` is not exported. Use ESM `import`; the previous declared `dist/index.cjs` did not exist.
+- `require()` is not exported. Use the ESM `import` entry.
 - The older `mermaid()`, `mermaidPlugin`, and `createMermaidPlugin` exports remain MDAST-only compatibility shortcuts. Register a HAST renderer as well.
 - The Sätteri peer range is `>=0.10.5 <0.11.0`. This checkout already used 0.10.5; this change pins that tested version and updates the compatibility contract.
 

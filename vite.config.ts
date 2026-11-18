@@ -6,14 +6,12 @@ export default defineConfig({
     lib: {
       entry: resolve(import.meta.dirname, "src/index.ts"),
       formats: ["es"],
-      fileName: () => "index.mjs",
+      fileName: () => "index.js",
     },
     rollupOptions: {
       external: [
         "satteri",
         /^node:/,
-        // 原生 .node 加载由 renderer.ts 运行时 createRequire 处理
-        "../index.cjs",
       ],
     },
   },

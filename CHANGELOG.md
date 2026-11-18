@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.4 — 2026-11-18
+
+- Split native bindings into platform-specific scoped npm packages; the root package now ships the matching platform dependency only.
+- Publish platform packages before the root package through the release workflow.
+
 ## 0.8.3 — 2026-11-18
 
 - Upgrade the native renderer to Merman 0.10.0 and its Mermaid 12 diagram catalog.

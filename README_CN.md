@@ -4,13 +4,15 @@
 
 [English](./README.md)
 
-本文对应 **0.8.3 版本**，后端为 Merman 原生渲染器。全部配置、11 个主题预设、兼容别名及颜色映射见 [配置与主题说明](./docs/configuration.zh-CN.md)，改动记录见 [CHANGELOG](./CHANGELOG.md)。
+本文对应 **0.8.4 版本**，后端为 Merman 原生渲染器。全部配置、11 个主题预设、兼容别名及颜色映射见 [配置与主题说明](./docs/configuration.zh-CN.md)，改动记录见 [CHANGELOG](./CHANGELOG.md)。
 
 ```sh
-bun add @xingwangzhe/satteri-mermaid@0.8.3 satteri@0.10.5
+bun add @xingwangzhe/satteri-mermaid@0.8.4 satteri@0.10.5
 ```
 
 要求 **Node.js 22.14.0 或更新版本**，原生绑定使用 Node-API 10。包入口为 **ES 模块**。发布矩阵提供 Linux glibc x64/arm64、macOS arm64、Windows x64 原生构建；其他平台需要自行构建兼容二进制。当前不提供 macOS x64、Windows arm64、Linux musl 二进制。
+
+主 npm 包包含 ESM 插件和渲染器。CI 将原生绑定分别发布为作用域平台子包，npm 只安装当前平台对应的可选依赖。
 
 ````ts
 import { markdownToHtml } from "satteri";
@@ -80,7 +82,7 @@ console.log(supportedDiagrams());
 - 渲染引擎、布局、字体、默认主题及生成的 SVG 都可能变化，升级生产网站前应检查代表性图表。
 - Merman 不支持 `preferredAspectRatio`，传入时会明确抛错。视口尺寸或容器 CSS 可以作为调整手段，但语义不同。
 - 默认渲染失败会抛错。如需保留源代码，请显式选择回退策略。
-- 不再声明 `require()` 导出，请使用 ESM `import`；原来声明的 `dist/index.cjs` 实际不存在。
+- 不提供 `require()` 导出，请使用 ESM `import`。
 - `mermaid()`、`mermaidPlugin`、`createMermaidPlugin` 仍保留为只注册 MDAST 的兼容入口，还需要注册 HAST 渲染插件。
 - Sätteri peer 范围更新为 `>=0.10.5 <0.11.0`。此工作区原本已经使用 0.10.5，本次固定已测试版本并修正兼容范围。
 

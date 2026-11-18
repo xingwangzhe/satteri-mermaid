@@ -50,10 +50,6 @@ describe("built npm package contract", () => {
       mkdirSync(pkg, { recursive: true });
       cpSync(join(root, "dist"), join(pkg, "dist"), { recursive: true });
       writeFileSync(join(pkg, "package.json"), JSON.stringify(manifest));
-      writeFileSync(
-        join(pkg, "index.cjs"),
-        'throw new Error("native binding must not be loaded");',
-      );
       symlinkSync(
         join(root, "node_modules", "satteri"),
         join(modules, "satteri"),

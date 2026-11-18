@@ -7,7 +7,7 @@ const output = resolve(process.argv[2]);
 for (const stage of ["baseline", "optimized"]) {
   const warm = spawnSync(
     process.execPath,
-    [join(root, "scripts", "pgo-workload.mjs"), "benchmark"],
+    ["--experimental-strip-types", join(root, "scripts", "pgo-workload.ts"), "benchmark"],
     {
       cwd: root,
       encoding: "utf8",
@@ -24,7 +24,7 @@ const samples = { baseline: [], optimized: [] };
 for (const stage of ["baseline", "optimized", "optimized", "baseline", "baseline", "optimized"]) {
   const result = spawnSync(
     process.execPath,
-    [join(root, "scripts", "pgo-workload.mjs"), "benchmark"],
+    ["--experimental-strip-types", join(root, "scripts", "pgo-workload.ts"), "benchmark"],
     {
       cwd: root,
       encoding: "utf8",

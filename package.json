@@ -1,6 +1,6 @@
 {
   "name": "@xingwangzhe/satteri-mermaid",
-  "version": "0.8.3",
+  "version": "0.8.4",
   "description": "Sätteri MDAST+HAST plugin: render Mermaid diagrams as static SVG at build time via Merman (napi-rs), with zero client JS.",
   "keywords": [
     "astro-component",
@@ -11,7 +11,9 @@
     "mermaid",
     "plugin",
     "renderer",
-    "satteri"
+    "satteri",
+    "napi-rs",
+    "rust"
   ],
   "homepage": "https://github.com/xingwangzhe/satteri-mermaid#readme",
   "license": "MIT",
@@ -22,8 +24,6 @@
   },
   "files": [
     "dist",
-    "*.node",
-    "index.cjs",
     "index.d.ts",
     "package.json",
     "THIRD_PARTY_NOTICES.md",
@@ -32,13 +32,13 @@
     "docs/configuration*.md"
   ],
   "type": "module",
-  "main": "./dist/index.mjs",
-  "module": "./dist/index.mjs",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs"
+      "import": "./dist/index.js"
     }
   },
   "publishConfig": {
@@ -46,25 +46,25 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "dev": "bun run build:debug && bun install --cwd example --frozen-lockfile && node scripts/link-example.mjs && cd example && bun run dev",
+    "dev": "bun run build:debug && bun install --cwd example --frozen-lockfile && bun run scripts/link-example.ts && cd example && bun run dev",
     "build:napi": "napi build --platform --release --no-js -- --locked && oxfmt index.d.ts",
     "build:vite": "vite build",
     "build:tsc": "tsc --emitDeclarationOnly --declarationDir dist",
     "build": "bun run build:napi && bun run build:vite && bun run build:tsc",
     "build:debug": "napi build --platform --no-js -- --locked && oxfmt index.d.ts && vite build && tsc --emitDeclarationOnly --declarationDir dist",
-    "build:example": "bun install --cwd example --frozen-lockfile && node scripts/link-example.mjs && cd example && bun run build",
+    "build:example": "bun install --cwd example --frozen-lockfile && bun run scripts/link-example.ts && cd example && bun run build",
     "test": "vitest run",
     "test:watch": "vitest",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
     "lint": "oxlint src test",
     "lint:fix": "oxlint --fix src test",
-    "prepublishOnly": "bun run build",
+    "prepublishOnly": "napi pre-publish --npm-dir npm --tag-style npm --no-gh-release",
     "typecheck": "tsc --project tsconfig.test.json",
     "preview": "bun run build:debug && bun run build:example && cd example && bun run preview",
     "preview:stop": "cd example && bun run preview:stop",
-    "build:pgo": "node scripts/build-pgo.mjs",
-    "benchmark:pgo": "node scripts/build-pgo.mjs --compare"
+    "build:pgo": "bun run scripts/build-pgo.ts",
+    "benchmark:pgo": "bun run scripts/build-pgo.ts --compare"
   },
   "devDependencies": {
     "@napi-rs/cli": "^3.10.5",
@@ -91,5 +91,14 @@
   },
   "engines": {
     "node": ">=22.14.0"
+  },
+  "workspaces": [
+    "npm/*"
+  ],
+  "optionalDependencies": {
+    "@xingwangzhe/satteri-mermaid-linux-x64-gnu": "workspace:*",
+    "@xingwangzhe/satteri-mermaid-win32-x64-msvc": "workspace:*",
+    "@xingwangzhe/satteri-mermaid-linux-arm64-gnu": "workspace:*",
+    "@xingwangzhe/satteri-mermaid-darwin-arm64": "workspace:*"
   }
 }

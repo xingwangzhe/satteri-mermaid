@@ -15,9 +15,31 @@
         "vite": "^8.3.0",
         "vitest": "^5.0.1",
       },
+      "optionalDependencies": {
+        "@xingwangzhe/satteri-mermaid-darwin-arm64": "workspace:*",
+        "@xingwangzhe/satteri-mermaid-linux-arm64-gnu": "workspace:*",
+        "@xingwangzhe/satteri-mermaid-linux-x64-gnu": "workspace:*",
+        "@xingwangzhe/satteri-mermaid-win32-x64-msvc": "workspace:*",
+      },
       "peerDependencies": {
         "satteri": ">=0.10.5 <0.11.0",
       },
+    },
+    "npm/darwin-arm64": {
+      "name": "@xingwangzhe/satteri-mermaid-darwin-arm64",
+      "version": "0.8.4",
+    },
+    "npm/linux-arm64-gnu": {
+      "name": "@xingwangzhe/satteri-mermaid-linux-arm64-gnu",
+      "version": "0.8.4",
+    },
+    "npm/linux-x64-gnu": {
+      "name": "@xingwangzhe/satteri-mermaid-linux-x64-gnu",
+      "version": "0.8.4",
+    },
+    "npm/win32-x64-msvc": {
+      "name": "@xingwangzhe/satteri-mermaid-win32-x64-msvc",
+      "version": "0.8.4",
     },
   },
   "packages": {
@@ -382,6 +404,14 @@
     "@vitest/mocker": ["@vitest/mocker@5.0.1", "https://mirrors.cloud.tencent.com/npm/@vitest/mocker/-/mocker-5.0.1.tgz", { "dependencies": { "@jridgewell/trace-mapping": "0.3.31", "@vitest/spy": "5.0.1", "estree-walker": "^3.0.3", "magic-string": "^1.2.3" }, "peerDependencies": { "msw": "^2.4.9", "vite": "^6.0.0 || ^7.0.0 || ^8.0.0" }, "optionalPeers": ["msw", "vite"] }, "sha512-6K1DoBNAPGvuOcSsGA4D6x+5zEEff/KmOOP3uetT2TrGpVfI+HRHRnJJfKi5ib/g1vx8IYHQD8s0pbJz8WQI7Q=="],
 
     "@vitest/spy": ["@vitest/spy@5.0.1", "https://mirrors.cloud.tencent.com/npm/@vitest/spy/-/spy-5.0.1.tgz", {}, "sha512-rbto/mF/SGERxEgYOek7Xm6B9b+y+mVoo+f4b2LymYO8zM1b7uB5nHuhVMTP2hxdzgxvGiZYGxGIaMvL5y180Q=="],
+
+    "@xingwangzhe/satteri-mermaid-darwin-arm64": ["@xingwangzhe/satteri-mermaid-darwin-arm64@workspace:npm/darwin-arm64"],
+
+    "@xingwangzhe/satteri-mermaid-linux-arm64-gnu": ["@xingwangzhe/satteri-mermaid-linux-arm64-gnu@workspace:npm/linux-arm64-gnu"],
+
+    "@xingwangzhe/satteri-mermaid-linux-x64-gnu": ["@xingwangzhe/satteri-mermaid-linux-x64-gnu@workspace:npm/linux-x64-gnu"],
+
+    "@xingwangzhe/satteri-mermaid-win32-x64-msvc": ["@xingwangzhe/satteri-mermaid-win32-x64-msvc@workspace:npm/win32-x64-msvc"],
 
     "argparse": ["argparse@2.0.1", "https://registry.npmmirror.com/argparse/-/argparse-2.0.1.tgz", {}, "sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q=="],
 

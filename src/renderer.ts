@@ -1,7 +1,5 @@
 /** Build-time SVG rendering through the native Merman Rust binding. */
-import { createRequire } from "node:module";
-import { fileURLToPath } from "node:url";
-import { dirname, resolve } from "node:path";
+import { loadNativeBinding } from "./native-binding";
 
 interface NativeBinding {
   render: (code: string, opts?: Record<string, unknown>) => string;
@@ -9,9 +7,7 @@ interface NativeBinding {
 }
 let nativeBinding: NativeBinding | null = null;
 function getBinding(): NativeBinding {
-  nativeBinding ??= createRequire(import.meta.url)(
-    resolve(dirname(fileURLToPath(import.meta.url)), "..", "index.cjs"),
-  ) as NativeBinding;
+  nativeBinding ??= loadNativeBinding() as NativeBinding;
   return nativeBinding;
 }
 
