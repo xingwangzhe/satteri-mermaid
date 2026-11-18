@@ -9,10 +9,7 @@ export default defineConfig({
       fileName: () => "index.js",
     },
     rollupOptions: {
-      external: [
-        "satteri",
-        /^node:/,
-      ],
+      external: ["satteri", /^node:/],
     },
   },
 });

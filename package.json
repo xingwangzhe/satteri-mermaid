@@ -1,7 +1,7 @@
 {
   "name": "@xingwangzhe/satteri-mermaid",
   "version": "0.8.4",
-  "description": "Sätteri MDAST+HAST plugin: render Mermaid diagrams as static SVG at build time via Merman (napi-rs), with zero client JS.",
+  "description": "MDAST and HAST plugin that renders Mermaid diagrams to static SVG with Rust. Installs only the native binary for your platform.",
   "keywords": [
     "astro-component",
     "astro-integration",
@@ -9,11 +9,11 @@
     "markdown",
     "mdast",
     "mermaid",
+    "napi-rs",
     "plugin",
     "renderer",
-    "satteri",
-    "napi-rs",
-    "rust"
+    "rust",
+    "satteri"
   ],
   "homepage": "https://github.com/xingwangzhe/satteri-mermaid#readme",
   "license": "MIT",
@@ -22,6 +22,9 @@
     "type": "git",
     "url": "https://github.com/xingwangzhe/satteri-mermaid"
   },
+  "workspaces": [
+    "npm/*"
+  ],
   "files": [
     "dist",
     "index.d.ts",
@@ -80,6 +83,12 @@
   "peerDependencies": {
     "satteri": ">=0.10.5 <0.11.0"
   },
+  "optionalDependencies": {
+    "@xingwangzhe/satteri-mermaid-darwin-arm64": "workspace:*",
+    "@xingwangzhe/satteri-mermaid-linux-arm64-gnu": "workspace:*",
+    "@xingwangzhe/satteri-mermaid-linux-x64-gnu": "workspace:*",
+    "@xingwangzhe/satteri-mermaid-win32-x64-msvc": "workspace:*"
+  },
   "napi": {
     "binaryName": "mermaid-rs",
     "targets": [
@@ -91,14 +100,5 @@
   },
   "engines": {
     "node": ">=22.14.0"
-  },
-  "workspaces": [
-    "npm/*"
-  ],
-  "optionalDependencies": {
-    "@xingwangzhe/satteri-mermaid-linux-x64-gnu": "workspace:*",
-    "@xingwangzhe/satteri-mermaid-win32-x64-msvc": "workspace:*",
-    "@xingwangzhe/satteri-mermaid-linux-arm64-gnu": "workspace:*",
-    "@xingwangzhe/satteri-mermaid-darwin-arm64": "workspace:*"
   }
 }

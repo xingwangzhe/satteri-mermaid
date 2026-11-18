@@ -1,14 +1,7 @@
 {
   "name": "@xingwangzhe/satteri-mermaid-linux-x64-gnu",
   "version": "0.8.4",
-  "cpu": [
-    "x64"
-  ],
-  "main": "mermaid-rs.linux-x64-gnu.node",
-  "files": [
-    "mermaid-rs.linux-x64-gnu.node"
-  ],
-  "description": "Sätteri MDAST+HAST plugin: render Mermaid diagrams as static SVG at build time via Merman (napi-rs), with zero client JS.",
+  "description": "MDAST and HAST plugin that renders Mermaid diagrams to static SVG with Rust. Installs only the native binary for your platform.",
   "keywords": [
     "astro-component",
     "astro-integration",
@@ -20,24 +13,31 @@
     "renderer",
     "satteri"
   ],
-  "author": "xingwangzhe",
   "homepage": "https://github.com/xingwangzhe/satteri-mermaid#readme",
   "license": "MIT",
-  "engines": {
-    "node": ">=22.14.0"
-  },
+  "author": "xingwangzhe",
   "repository": {
     "type": "git",
     "url": "https://github.com/xingwangzhe/satteri-mermaid"
   },
+  "files": [
+    "mermaid-rs.linux-x64-gnu.node"
+  ],
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "libc": [
+    "glibc"
+  ],
+  "main": "mermaid-rs.linux-x64-gnu.node",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
-  "os": [
-    "linux"
-  ],
-  "libc": [
-    "glibc"
-  ]
+  "engines": {
+    "node": ">=22.14.0"
+  }
 }

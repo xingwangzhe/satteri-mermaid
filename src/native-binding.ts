@@ -4,18 +4,9 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const targets: Record<string, [packageName: string, binaryName: string]> = {
-  "win32-x64": [
-    "@xingwangzhe/satteri-mermaid-win32-x64-msvc",
-    "mermaid-rs.win32-x64-msvc.node",
-  ],
-  "darwin-arm64": [
-    "@xingwangzhe/satteri-mermaid-darwin-arm64",
-    "mermaid-rs.darwin-arm64.node",
-  ],
-  "linux-x64": [
-    "@xingwangzhe/satteri-mermaid-linux-x64-gnu",
-    "mermaid-rs.linux-x64-gnu.node",
-  ],
+  "win32-x64": ["@xingwangzhe/satteri-mermaid-win32-x64-msvc", "mermaid-rs.win32-x64-msvc.node"],
+  "darwin-arm64": ["@xingwangzhe/satteri-mermaid-darwin-arm64", "mermaid-rs.darwin-arm64.node"],
+  "linux-x64": ["@xingwangzhe/satteri-mermaid-linux-x64-gnu", "mermaid-rs.linux-x64-gnu.node"],
   "linux-arm64": [
     "@xingwangzhe/satteri-mermaid-linux-arm64-gnu",
     "mermaid-rs.linux-arm64-gnu.node",
