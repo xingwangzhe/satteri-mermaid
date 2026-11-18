@@ -59,7 +59,11 @@ describe("Sätteri 0.10.5 end-to-end integration", () => {
   });
 
   it("changes only root sizing in responsive mode, preserving node rectangles", () => {
-    const svg = compile(fence(chart)).html.match(/<svg\b[\s\S]*?<\/svg>/)![0];
+    const html = compile(fence(chart)).html;
+    const wrapper = html.match(/<div class="mermaid"[^>]*>/)![0];
+    expect(wrapper).toContain("display:flex");
+    expect(wrapper).toContain("justify-content:center");
+    const svg = html.match(/<svg\b[\s\S]*?<\/svg>/)![0];
     const [root, ...children] = parseSvg(svg);
     expect(root.attributes.width).toBeUndefined();
     expect(root.attributes.height).toBeUndefined();
@@ -74,9 +78,13 @@ describe("Sätteri 0.10.5 end-to-end integration", () => {
   });
 
   it("preserves the renderer's root sizing when responsive is false", () => {
-    const svg = compile(fence(chart), { responsive: false }).html.match(
-      /<svg\b[\s\S]*?<\/svg>/,
-    )![0];
+    const html = compile(fence(chart), { responsive: false }).html;
+    const wrapper = html.match(/<div class="mermaid"[^>]*>/)![0];
+    expect(wrapper).toContain("display:flex");
+    expect(wrapper).toContain("justify-content:center");
+    const svg = html.match(/<svg\b[\s\S]*?<\/svg>/)![0];
+    expect(parseSvg(svg)[0].attributes.width).toBe("100%");
+    expect(parseSvg(svg)[0].attributes.viewBox).toBeTruthy();
     expect(parseSvg(svg)[0].attributes.style ?? "").not.toContain("display:block");
   });
 

@@ -1,6 +1,6 @@
 {
   "name": "@xingwangzhe/satteri-mermaid-linux-arm64-gnu",
-  "version": "0.8.4",
+  "version": "0.8.5",
   "description": "MDAST and HAST plugin that renders Mermaid diagrams to static SVG with Rust. Installs only the native binary for your platform.",
   "keywords": [
     "astro-component",

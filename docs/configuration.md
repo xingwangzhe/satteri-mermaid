@@ -1,6 +1,6 @@
 # Configuration and themes
 
-This reference describes `@xingwangzhe/satteri-mermaid@0.8.4`, Merman 0.10.0, and Sätteri 0.10.5. Register both `mermaidMdast()` and `mermaidHast()`. Use `renderMermaidSVG()` for direct rendering. [中文](./configuration.zh-CN.md)
+This reference describes `@xingwangzhe/satteri-mermaid@0.8.5`, Merman 0.10.0, and Sätteri 0.10.5. Register both `mermaidMdast()` and `mermaidHast()`. Use `renderMermaidSVG()` for direct rendering. [中文](./configuration.zh-CN.md)
 
 ## Theme names
 
@@ -25,26 +25,26 @@ Merman 0.10.0 also has seven upstream **host-theme presets**: `editor-light`, `e
 
 ## Plugin options
 
-| Option                 | Type / default                                | Effect                                                                                        |
-| ---------------------- | --------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `langs`                | `string[]` / `["mermaid"]`                    | MDAST fence languages; pass the same configuration to both plugins when customizing languages |
-| `ssg`                  | `boolean` / `true`                            | Build-time SVG; `false` preserves escaped source for a host-provided client renderer          |
-| `responsive`           | `boolean` / `true`                            | Remove only root SVG dimensions and fit the container; preserve shape dimensions              |
-| `theme`                | Theme name above / `default`                  | Theme preset                                                                                  |
-| `font`                 | `string` / engine default                     | Font family; direct rendering uses `fontFamily`                                               |
-| `fontSize`             | `number` / engine default                     | Font size in px                                                                               |
-| `nodeSpacing`          | `number` / engine default                     | Flowchart spacing between nodes at the same rank                                              |
-| `rankSpacing`          | `number` / engine default                     | Flowchart spacing between ranks                                                               |
-| `siteConfig`           | `Record<string, unknown>` / unset             | Full Mermaid configuration, including diagram-specific settings such as `flowchart.curve`     |
-| `themeVariables`       | `Record<string, unknown>` / unset             | Mermaid variables; override legacy color fields                                               |
-| `themeOverrides`       | `ThemeOverrides` / unset                      | Legacy compatibility mapping described below                                                  |
-| `themeCSS`             | `string` / unset                              | Upstream Mermaid theme CSS                                                                    |
-| `scopedCSS`            | `string` / unset                              | Diagram-scoped CSS through Merman's postprocessor, including stroke-width controls            |
-| `viewportWidth`        | `number` / engine default                     | Finite positive layout viewport width; not a fixed SVG width                                  |
-| `viewportHeight`       | `number` / engine default                     | Finite positive layout viewport height; not an aspect-ratio guarantee                         |
-| `fastTextMetrics`      | `boolean` / `false`                           | Deterministic text estimation; can change layout and does not promise a fixed speedup         |
-| `onError`              | `throw`, `warn-and-code`, or `code` / `throw` | Fail compilation, warn and preserve source, or silently preserve source                       |
-| `preferredAspectRatio` | Deprecated                                    | Unsupported by Merman; passing it throws. Viewport dimensions have different semantics        |
+| Option                 | Type / default                                | Effect                                                                                            |
+| ---------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `langs`                | `string[]` / `["mermaid"]`                    | MDAST fence languages; pass the same configuration to both plugins when customizing languages     |
+| `ssg`                  | `boolean` / `true`                            | Build-time SVG; `false` preserves escaped source for a host-provided client renderer              |
+| `responsive`           | `boolean` / `true`                            | Fits SVG to its container and centers it in the Mermaid wrapper; fixed-size mode is centered too. |
+| `theme`                | Theme name above / `default`                  | Theme preset                                                                                      |
+| `font`                 | `string` / engine default                     | Font family; direct rendering uses `fontFamily`                                                   |
+| `fontSize`             | `number` / engine default                     | Font size in px                                                                                   |
+| `nodeSpacing`          | `number` / engine default                     | Flowchart spacing between nodes at the same rank                                                  |
+| `rankSpacing`          | `number` / engine default                     | Flowchart spacing between ranks                                                                   |
+| `siteConfig`           | `Record<string, unknown>` / unset             | Full Mermaid configuration, including diagram-specific settings such as `flowchart.curve`         |
+| `themeVariables`       | `Record<string, unknown>` / unset             | Mermaid variables; override legacy color fields                                                   |
+| `themeOverrides`       | `ThemeOverrides` / unset                      | Legacy compatibility mapping described below                                                      |
+| `themeCSS`             | `string` / unset                              | Upstream Mermaid theme CSS                                                                        |
+| `scopedCSS`            | `string` / unset                              | Diagram-scoped CSS through Merman's postprocessor, including stroke-width controls                |
+| `viewportWidth`        | `number` / engine default                     | Finite positive layout viewport width; not a fixed SVG width                                      |
+| `viewportHeight`       | `number` / engine default                     | Finite positive layout viewport height; not an aspect-ratio guarantee                             |
+| `fastTextMetrics`      | `boolean` / `false`                           | Deterministic text estimation; can change layout and does not promise a fixed speedup             |
+| `onError`              | `throw`, `warn-and-code`, or `code` / `throw` | Fail compilation, warn and preserve source, or silently preserve source                           |
+| `preferredAspectRatio` | Deprecated                                    | Unsupported by Merman; passing it throws. Viewport dimensions have different semantics            |
 
 Native defaults are `theme: "default"`, `htmlLabels: false`, and `securityLevel: "strict"`. `siteConfig` can override them. Tests verify that a JavaScript link is absent from default flowchart output; arbitrary custom configuration, CSS, and input are not covered by a universal sanitizer guarantee.
 

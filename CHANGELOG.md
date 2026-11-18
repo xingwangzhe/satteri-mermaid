@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.5 — 2026-11-18
+
+- Center the generated Mermaid wrapper so responsive and fixed-size SVG diagrams align within article content.
+- Cover centered wrapper output in Markdown integration tests and document both layout modes.
+
 ## 0.8.4 — 2026-11-18
 
 - Split native bindings into platform-specific scoped npm packages; the root package now ships the matching platform dependency only.

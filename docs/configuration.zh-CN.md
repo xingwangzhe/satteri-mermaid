@@ -1,6 +1,6 @@
 # 配置项与主题
 
-本说明对应 `@xingwangzhe/satteri-mermaid@0.8.4`、Merman 0.10.0 和 Sätteri 0.10.5。注册 `mermaidMdast()` 与 `mermaidHast()` 两个插件；直接渲染则调用 `renderMermaidSVG()`。
+本说明对应 `@xingwangzhe/satteri-mermaid@0.8.5`、Merman 0.10.0 和 Sätteri 0.10.5。注册 `mermaidMdast()` 与 `mermaidHast()` 两个插件；直接渲染则调用 `renderMermaidSVG()`。
 
 ## 主题名称
 
@@ -25,26 +25,26 @@ Merman 0.10.0 上游还提供 7 个**宿主主题预设**：`editor-light`、`ed
 
 ## 插件选项
 
-| 选项                   | 类型 / 默认值                                    | 输出或行为                                                       |
-| ---------------------- | ------------------------------------------------ | ---------------------------------------------------------------- |
-| `langs`                | `string[]` / `["mermaid"]`                       | MDAST 匹配代码块语言；自定义语言时两个插件传同一配置             |
-| `ssg`                  | `boolean` / `true`                               | 构建时生成 SVG；`false` 保留转义的代码，客户端渲染器由宿主提供   |
-| `responsive`           | `boolean` / `true`                               | 只移除 SVG 根节点尺寸并设置容器宽度，保留内部图形尺寸            |
-| `theme`                | 上表主题名 / `default`                           | 主题预设                                                         |
-| `font`                 | `string` / 引擎默认值                            | 字体族；对应直接渲染的 `fontFamily`                              |
-| `fontSize`             | `number` / 引擎默认值                            | 字号，单位 px                                                    |
-| `nodeSpacing`          | `number` / 引擎默认值                            | 流程图同层节点间距                                               |
-| `rankSpacing`          | `number` / 引擎默认值                            | 流程图层级间距                                                   |
-| `siteConfig`           | `Record<string, unknown>` / 无                   | 完整 Mermaid 配置；例如 `flowchart.curve`、`sequence` 等图表配置 |
-| `themeVariables`       | `Record<string, unknown>` / 无                   | Mermaid 主题变量，优先于旧版逐色覆盖                             |
-| `themeOverrides`       | `ThemeOverrides` / 无                            | 旧版逐色选项的兼容映射，详见下表                                 |
-| `themeCSS`             | `string` / 无                                    | 上游 Mermaid 主题 CSS                                            |
-| `scopedCSS`            | `string` / 无                                    | 通过 Merman 后处理器添加图表作用域 CSS，适合线宽等控制           |
-| `viewportWidth`        | `number` / 引擎默认值                            | 有限且大于零的布局视口宽度，不等于固定 SVG 宽度                  |
-| `viewportHeight`       | `number` / 引擎默认值                            | 有限且大于零的布局视口高度，不保证指定宽高比                     |
-| `fastTextMetrics`      | `boolean` / `false`                              | 使用确定性文本估算；可能改变布局，不等于固定性能提升             |
-| `onError`              | `throw` / `warn-and-code` / `code`；默认 `throw` | 抛错阻止构建，或警告并保留代码，或静默保留代码                   |
-| `preferredAspectRatio` | 已弃用                                           | Merman 不支持，传入时明确抛错；视口尺寸的语义不同                |
+| 选项                   | 类型 / 默认值                                    | 输出或行为                                                                    |
+| ---------------------- | ------------------------------------------------ | ----------------------------------------------------------------------------- |
+| `langs`                | `string[]` / `["mermaid"]`                       | MDAST 匹配代码块语言；自定义语言时两个插件传同一配置                          |
+| `ssg`                  | `boolean` / `true`                               | 构建时生成 SVG；`false` 保留转义的代码，客户端渲染器由宿主提供                |
+| `responsive`           | `boolean` / `true`                               | 只移除 SVG 根节点尺寸并设置容器宽度，保留内部图形尺寸；Mermaid 容器会居中内容 |
+| `theme`                | 上表主题名 / `default`                           | 主题预设                                                                      |
+| `font`                 | `string` / 引擎默认值                            | 字体族；对应直接渲染的 `fontFamily`                                           |
+| `fontSize`             | `number` / 引擎默认值                            | 字号，单位 px                                                                 |
+| `nodeSpacing`          | `number` / 引擎默认值                            | 流程图同层节点间距                                                            |
+| `rankSpacing`          | `number` / 引擎默认值                            | 流程图层级间距                                                                |
+| `siteConfig`           | `Record<string, unknown>` / 无                   | 完整 Mermaid 配置；例如 `flowchart.curve`、`sequence` 等图表配置              |
+| `themeVariables`       | `Record<string, unknown>` / 无                   | Mermaid 主题变量，优先于旧版逐色覆盖                                          |
+| `themeOverrides`       | `ThemeOverrides` / 无                            | 旧版逐色选项的兼容映射，详见下表                                              |
+| `themeCSS`             | `string` / 无                                    | 上游 Mermaid 主题 CSS                                                         |
+| `scopedCSS`            | `string` / 无                                    | 通过 Merman 后处理器添加图表作用域 CSS，适合线宽等控制                        |
+| `viewportWidth`        | `number` / 引擎默认值                            | 有限且大于零的布局视口宽度，不等于固定 SVG 宽度                               |
+| `viewportHeight`       | `number` / 引擎默认值                            | 有限且大于零的布局视口高度，不保证指定宽高比                                  |
+| `fastTextMetrics`      | `boolean` / `false`                              | 使用确定性文本估算；可能改变布局，不等于固定性能提升                          |
+| `onError`              | `throw` / `warn-and-code` / `code`；默认 `throw` | 抛错阻止构建，或警告并保留代码，或静默保留代码                                |
+| `preferredAspectRatio` | 已弃用                                           | Merman 不支持，传入时明确抛错；视口尺寸的语义不同                             |
 
 默认原生配置为 `theme: "default"`、`htmlLabels: false`、`securityLevel: "strict"`。`siteConfig` 可覆盖这些值；自定义安全配置、CSS 或输入的效果由调用者及上游实现决定。默认严格配置经过 JavaScript 链接不进入流程图 SVG 的测试，但不是任意输入的完整净化承诺。
 

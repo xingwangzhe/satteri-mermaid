@@ -4,10 +4,10 @@
 
 [English](./README.md)
 
-本文对应 **0.8.4 版本**，后端为 Merman 原生渲染器。全部配置、11 个主题预设、兼容别名及颜色映射见 [配置与主题说明](./docs/configuration.zh-CN.md)，改动记录见 [CHANGELOG](./CHANGELOG.md)。
+本文对应 **0.8.5 版本**，后端为 Merman 原生渲染器。全部配置、11 个主题预设、兼容别名及颜色映射见 [配置与主题说明](./docs/configuration.zh-CN.md)，改动记录见 [CHANGELOG](./CHANGELOG.md)。
 
 ```sh
-bun add @xingwangzhe/satteri-mermaid@0.8.4 satteri@0.10.5
+bun add @xingwangzhe/satteri-mermaid@0.8.5 satteri@0.10.5
 ```
 
 要求 **Node.js 22.14.0 或更新版本**，原生绑定使用 Node-API 10。包入口为 **ES 模块**。发布矩阵提供 Linux glibc x64/arm64、macOS arm64、Windows x64 原生构建；其他平台需要自行构建兼容二进制。当前不提供 macOS x64、Windows arm64、Linux musl 二进制。
@@ -34,7 +34,7 @@ console.log(result.html);
 | --------------------------------- | ------------- | ------------------------------------------------------------------------------------- |
 | `langs`                           | `["mermaid"]` | 匹配的代码块语言                                                                      |
 | `ssg`                             | `true`        | 编译时渲染；设为 `false` 时输出转义的 `<pre class="mermaid">`，客户端渲染器由宿主提供 |
-| `responsive`                      | `true`        | SVG 适应容器宽度                                                                      |
+| `responsive`                      | `true`        | SVG 适应容器宽度；Mermaid 容器使用居中布局，固定尺寸模式也会居中                      |
 | `theme`                           | `"default"`   | Merman 主题预设                                                                       |
 | `font`、`fontSize`                | 引擎默认值    | 字体族与像素字号                                                                      |
 | `nodeSpacing`、`rankSpacing`      | 引擎默认值    | Mermaid 流程图间距                                                                    |

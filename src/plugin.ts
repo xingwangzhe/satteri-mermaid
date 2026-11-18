@@ -392,7 +392,9 @@ export function createMermaidHastPlugin(options?: MermaidPluginOptions): {
 } {
   const responsive = options?.responsive ?? true;
   const ssg = options?.ssg ?? true;
-  const wrapperStyle = responsive ? "max-width:100%;overflow:hidden" : "";
+  const wrapperStyle = responsive
+    ? "max-width:100%;overflow:hidden;display:flex;justify-content:center"
+    : "display:flex;justify-content:center";
 
   const plugin = defineHastPlugin({
     name: "satteri-mermaid-hast",
