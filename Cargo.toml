@@ -10,16 +10,20 @@ version = "0.1.0"
 crate-type = ["cdylib"]
 
 [dependencies]
-napi-derive = "3.6.9"
-merman = { version = "=0.7.0", default-features = false, features = ["render"] }
+napi-derive = "3.7.1"
+merman = { version = "=0.10.0", default-features = false, features = [
+  "all-diagrams",
+  "svg",
+  "layout-cytoscape",
+] }
 serde_json = "1"
 
 [dependencies.napi]
-version = "3.13.0"
+version = "3.16.2"
 features = ["napi10"]
 
 [build-dependencies]
-napi-build = "2.5.0"
+napi-build = "2.6.0"
 
 [profile.release]
 opt-level = 3
@@ -27,6 +31,3 @@ lto = "fat"
 codegen-units = 1
 incremental = false
 strip = "symbols"
-
-[patch.crates-io]
-merman-core = { path = "vendor/merman-core" }

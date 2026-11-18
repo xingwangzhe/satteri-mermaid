@@ -10,7 +10,7 @@ bun run preview
 
 也可以在已构建包和示例后，直接进入本目录运行 `bun run preview`。开发模式在仓库根目录运行 `bun run dev`。
 
-示例通过准备脚本链接本地包，使用 `dist` 构建产物，真实调用 `markdownToHtml` 与 Mermaid 双插件。页面展示 18 类图表、11 个主题和实际引擎目录。图表直接使用包生成 SVG 中的 Mermaid 样式；页面 CSS 仅处理页面排版和卡片，不覆盖图表内部样式。不加载 Mermaid 客户端脚本。
+示例通过准备脚本链接本地包，使用 `dist` 构建产物，真实调用 `markdownToHtml` 与 Mermaid 双插件。页面展示 Merman 0.10.0 报告的全部 37 个图表标识、11 个主题和实际引擎目录。图表直接使用包生成 SVG 中的 Mermaid 样式；页面 CSS 仅处理页面排版和卡片，不覆盖图表内部样式。不加载 Mermaid 客户端脚本。
 
 首次使用先在仓库根目录安装依赖：
 

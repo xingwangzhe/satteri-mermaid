@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.8.3 — 2026-11-18
+
+- Upgrade the native renderer to Merman 0.10.0 and its Mermaid 12 diagram catalog.
+- Replace the local Merman 0.7.0 UTF-8 patch with upstream fixes.
+- Expose and render all 37 diagram identifiers reported by the native engine; add real SVG coverage for each identifier.
+- Update the Astro gallery to preview the complete engine catalog.
+- Preserve caller theme variables while supplying a finite Quadrant Chart point color for Merman 0.10.0's invalid default.
+- Upgrade Rust dependencies and refresh Cargo.lock.
+
 ## 0.8.2 — 2026-10-07
 
 - Build native release candidates with O3, fat LTO, one code-generation unit, and disabled incremental compilation.

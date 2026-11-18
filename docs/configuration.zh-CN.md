@@ -1,6 +1,6 @@
 # 配置项与主题
 
-本说明对应 `@xingwangzhe/satteri-mermaid@0.8.1`、Merman 0.7.0 和 Sätteri 0.10.5。注册 `mermaidMdast()` 与 `mermaidHast()` 两个插件；直接渲染则调用 `renderMermaidSVG()`。
+本说明对应 `@xingwangzhe/satteri-mermaid@0.8.3`、Merman 0.10.0 和 Sätteri 0.10.5。注册 `mermaidMdast()` 与 `mermaidHast()` 两个插件；直接渲染则调用 `renderMermaidSVG()`。
 
 ## 主题名称
 
@@ -21,7 +21,7 @@
 | `redux-dark-color` | Redux 暗色彩色主题                       |
 | `modern`           | 旧版兼容别名，映射到 `default`           |
 
-Merman 0.7.0 上游还提供 7 个**宿主主题预设**：`editor-light`、`editor-dark`、`one-dark`、`gruvbox-light`、`gruvbox-dark`、`ayu-light`、`ayu-dark`。它们是另一套宿主配色接口，本插件当前没有暴露该接口，不能把这些名称传给 `theme`，也不能把它们加进本插件的预设数量。
+Merman 0.10.0 上游还提供 7 个**宿主主题预设**：`editor-light`、`editor-dark`、`one-dark`、`gruvbox-light`、`gruvbox-dark`、`ayu-light`、`ayu-dark`。它们是另一套宿主配色接口，本插件当前没有暴露该接口，不能把这些名称传给 `theme`，也不能把它们加进本插件的预设数量。
 
 ## 插件选项
 

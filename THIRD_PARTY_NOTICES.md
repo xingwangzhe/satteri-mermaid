@@ -1,6 +1,6 @@
 # Third-party notices
 
-## Merman 0.7.0
+## Merman 0.10.0
 
 The native renderer integrates Merman and its workspace renderer crates.
 Upstream: https://github.com/Latias94/merman
@@ -36,6 +36,6 @@ Sätteri is a separately distributed npm peer dependency under the MIT license.
 Its own license and attribution remain with that dependency.
 Upstream: https://github.com/bruits/satteri
 
-## Local Merman core patch
+## Merman diagram regression fixtures
 
-Version 0.8.1 builds `merman-core` 0.7.0 with the UTF-8 ER lexer fix documented in `vendor/README.md`. The vendored source preserves its upstream MIT and Apache-2.0 license files; this binary distribution uses the MIT option stated above.
+The test corpus under `test/fixtures/merman/` adapts diagram examples from Merman 0.10.0's benchmark fixtures. These test-only examples are covered by the upstream MIT OR Apache-2.0 license; this repository uses the MIT option stated above. Upstream: https://github.com/Latias94/merman

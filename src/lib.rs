@@ -1,9 +1,11 @@
 #![deny(clippy::all)]
 
-use merman::render::{
-  HeadlessRenderer, RootBackgroundPostprocessor, ScopedCssPostprocessor, SvgPipeline,
+use merman::svg::{RootBackgroundPostprocessor, ScopedCssPostprocessor, SvgPipeline};
+use merman::svg::{ThemeAdmissionPolicy, TrustedThemeLane, TrustedThemeLanes};
+use merman::{
+  MermaidEngine, OperationControl, ParseOptions, RenderOutput, RenderRequest, Renderer,
+  SourcePresentationConfig, SvgRequest,
 };
-use merman::MermaidConfig;
 use napi_derive::napi;
 use serde_json::Value;
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -41,13 +43,18 @@ fn render_inner(code: String, opts: Option<RenderOptions>) -> napi::Result<Strin
     "satteri-mermaid-{}",
     NEXT_ID.fetch_add(1, Ordering::Relaxed)
   );
-  let mut renderer = HeadlessRenderer::new()
-    .with_strict_parsing()
-    .with_diagram_id(&id);
+  let renderer = Renderer::new().with_parse_options(ParseOptions::strict());
   // Native SVG text avoids browser-only foreignObject labels and duplicate fallbacks.
   let mut config =
     serde_json::json!({"theme": "default", "htmlLabels": false, "securityLevel": "strict"});
-  let mut pipeline = SvgPipeline::parity();
+  let mut request = SvgRequest::default();
+  request.environment = request.environment.with_theme_admission_policy(
+    ThemeAdmissionPolicy::permissive().with_trusted_lanes(TrustedThemeLanes::from_allowed([
+      TrustedThemeLane::RawThemeCss,
+    ])),
+  );
+  request.options.diagram_id = Some(id);
+  request.pipeline = Some(SvgPipeline::parity());
   if let Some(opts) = opts {
     if let Some(json) = opts.site_config_json {
       let supplied: Value = serde_json::from_str(&json)
@@ -61,11 +68,9 @@ fn render_inner(code: String, opts: Option<RenderOptions>) -> napi::Result<Strin
         .extend(supplied.clone());
     }
     if let Some(id) = opts.diagram_id {
-      renderer = renderer.with_diagram_id(&id);
+      request.options.diagram_id = Some(id);
     }
-    if opts.fast_text_metrics == Some(true) {
-      renderer = renderer.with_deterministic_text_measurer();
-    }
+    // Merman 0.10 uses deterministic text metrics by default.
     for (value, name) in [
       (opts.viewport_width, "viewportWidth"),
       (opts.viewport_height, "viewportHeight"),
@@ -77,26 +82,55 @@ fn render_inner(code: String, opts: Option<RenderOptions>) -> napi::Result<Strin
           )));
         }
         if name == "viewportWidth" {
-          renderer.layout.viewport_width = value;
+          request.layout.container_width = value;
         } else {
-          renderer.layout.viewport_height = value;
+          request.layout.container_height = value;
         }
       }
     }
     if let Some(css) = opts.scoped_css {
-      pipeline = pipeline.with_postprocessor(ScopedCssPostprocessor::new(css));
+      request.pipeline = Some(
+        request
+          .pipeline
+          .take()
+          .unwrap_or_else(SvgPipeline::parity)
+          .with_postprocessor(ScopedCssPostprocessor::new(css)),
+      );
     }
+  }
+  let theme_variables = config
+    .as_object_mut()
+    .expect("object literal")
+    .entry("themeVariables")
+    .or_insert_with(|| serde_json::json!({}));
+  if let Some(theme_variables) = theme_variables.as_object_mut() {
+    // Merman 0.10 currently emits NaN for the Quadrant Chart point fill default.
+    theme_variables
+      .entry("quadrantPointFill")
+      .or_insert_with(|| Value::String("#1f77b4".to_owned()));
   }
   if let Some(background) = config
     .pointer("/themeVariables/background")
     .and_then(Value::as_str)
   {
-    pipeline = pipeline.with_postprocessor(RootBackgroundPostprocessor::new(background));
+    request.pipeline = Some(
+      request
+        .pipeline
+        .take()
+        .unwrap_or_else(SvgPipeline::parity)
+        .with_postprocessor(RootBackgroundPostprocessor::new(background)),
+    );
   }
-  renderer
-    .with_site_config(MermaidConfig::from_value(config))
-    .with_svg_pipeline(pipeline)
-    .render_svg_sync(&code)
-    .map_err(|error| napi::Error::from_reason(format!("Merman render failed: {error}")))?
-    .ok_or_else(|| napi::Error::from_reason("Merman did not detect a Mermaid diagram"))
+  let renderer = renderer.with_presentation_engine(
+    MermaidEngine::new().with_site_config(SourcePresentationConfig::from_value(config)),
+  );
+  let output = renderer
+    .render(RenderRequest::svg(&code, OperationControl::new(), request))
+    .map_err(|error| napi::Error::from_reason(format!("Merman render failed: {error}")))?;
+  let RenderOutput::Svg(Some(svg)) = output else {
+    return Err(napi::Error::from_reason(
+      "Merman did not detect a Mermaid diagram",
+    ));
+  };
+  Ok(svg.svg().to_owned())
 }

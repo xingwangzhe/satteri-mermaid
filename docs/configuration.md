@@ -1,6 +1,6 @@
 # Configuration and themes
 
-This reference describes `@xingwangzhe/satteri-mermaid@0.8.1`, Merman 0.7.0, and Sätteri 0.10.5. Register both `mermaidMdast()` and `mermaidHast()`. Use `renderMermaidSVG()` for direct rendering. [中文](./configuration.zh-CN.md)
+This reference describes `@xingwangzhe/satteri-mermaid@0.8.3`, Merman 0.10.0, and Sätteri 0.10.5. Register both `mermaidMdast()` and `mermaidHast()`. Use `renderMermaidSVG()` for direct rendering. [中文](./configuration.zh-CN.md)
 
 ## Theme names
 
@@ -21,7 +21,7 @@ There are **11 presets** and one compatibility alias, `modern`; the alias is not
 | `redux-dark-color` | Redux dark color theme                               |
 | `modern`           | Legacy alias for `default`                           |
 
-Merman 0.7.0 also has seven upstream **host-theme presets**: `editor-light`, `editor-dark`, `one-dark`, `gruvbox-light`, `gruvbox-dark`, `ayu-light`, and `ayu-dark`. This plugin does not expose that separate host API. These names are not valid `theme` values and are not included in this plugin's theme count.
+Merman 0.10.0 also has seven upstream **host-theme presets**: `editor-light`, `editor-dark`, `one-dark`, `gruvbox-light`, `gruvbox-dark`, `ayu-light`, and `ayu-dark`. This plugin does not expose that separate host API. These names are not valid `theme` values and are not included in this plugin's theme count.
 
 ## Plugin options
 

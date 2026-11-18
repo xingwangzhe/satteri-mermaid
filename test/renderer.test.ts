@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { renderMermaidSVG, supportedDiagrams } from "../src/index";
 import { diagrams } from "./fixtures/diagrams";
+import { mermanDiagrams } from "./fixtures/supported-diagrams";
 import { parseSvg } from "./svg";
 const chart = diagrams.flowchart;
 const fixed = { diagramId: "test-chart" };
@@ -12,6 +13,18 @@ describe("Merman native renderer", () => {
     expect(elements[0].attributes.viewBox).toBeTruthy();
     expect(elements.length).toBeGreaterThan(2);
     expect(svg).not.toMatch(/(?:NaN|Infinity)/);
+  });
+  it.each(Object.entries(mermanDiagrams))(
+    "renders Merman-supported %s diagrams",
+    (_name, source) => {
+      const svg = renderMermaidSVG(source, fixed);
+      expect(svg).toMatch(/^<svg\b/);
+      expect(parseSvg(svg).length).toBeGreaterThan(1);
+      expect(svg).not.toMatch(/(?:NaN|Infinity)/);
+    },
+  );
+  it("has a render fixture for every Merman diagram identifier", () => {
+    expect([...supportedDiagrams()].sort()).toEqual(Object.keys(mermanDiagrams).sort());
   });
   it("renders Chinese ER entities and attributes without a native panic", () => {
     const svg = renderMermaidSVG(

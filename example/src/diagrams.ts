@@ -1,4 +1,5 @@
 /** Small, deterministic examples spanning different parser/layout families. */
+import { mermanDiagrams } from "../../test/fixtures/supported-diagrams";
 export const diagrams: Record<string, string> = {
   flowchart: 'flowchart TD\n A["Start"] --> B["Done"]',
   sequence:
@@ -23,4 +24,5 @@ export const diagrams: Record<string, string> = {
   architecture:
     "architecture-beta\n service api(server)[API]\n service db(database)[Database]\n api:R -- L:db",
   xychart: 'xychart-beta\n x-axis [Jan, Feb, Mar]\n y-axis "Count" 0 --> 10\n bar [2, 5, 8]',
+  ...mermanDiagrams,
 };

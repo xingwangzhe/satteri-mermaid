@@ -1,13 +1,13 @@
 # @xingwangzhe/satteri-mermaid
 
-在 Sätteri 编译阶段，把 Mermaid 代码块渲染为内联 SVG。后端通过 napi-rs 调用已发布的 **Merman 0.7.0** Rust 渲染器；插件使用 **Sätteri 0.10.5** 验证。静态渲染不需要 Mermaid 客户端脚本、DOM、浏览器或 WASM 运行时。
+在 Sätteri 编译阶段，把 Mermaid 代码块渲染为内联 SVG。后端通过 napi-rs 调用已发布的 **Merman 0.10.0** Rust 渲染器；插件使用 **Sätteri 0.10.5** 验证。静态渲染不需要 Mermaid 客户端脚本、DOM、浏览器或 WASM 运行时。
 
 [English](./README.md)
 
-本文对应 **0.8.2 版本**，后端为 Merman 原生渲染器。全部配置、11 个主题预设、兼容别名及颜色映射见 [配置与主题说明](./docs/configuration.zh-CN.md)，改动记录见 [CHANGELOG](./CHANGELOG.md)。
+本文对应 **0.8.3 版本**，后端为 Merman 原生渲染器。全部配置、11 个主题预设、兼容别名及颜色映射见 [配置与主题说明](./docs/configuration.zh-CN.md)，改动记录见 [CHANGELOG](./CHANGELOG.md)。
 
 ```sh
-bun add @xingwangzhe/satteri-mermaid@0.8.2 satteri@0.10.5
+bun add @xingwangzhe/satteri-mermaid@0.8.3 satteri@0.10.5
 ```
 
 要求 **Node.js 22.14.0 或更新版本**，原生绑定使用 Node-API 10。包入口为 **ES 模块**。发布矩阵提供 Linux glibc x64/arm64、macOS arm64、Windows x64 原生构建；其他平台需要自行构建兼容二进制。当前不提供 macOS x64、Windows arm64、Linux musl 二进制。
@@ -84,7 +84,7 @@ console.log(supportedDiagrams());
 - `mermaid()`、`mermaidPlugin`、`createMermaidPlugin` 仍保留为只注册 MDAST 的兼容入口，还需要注册 HAST 渲染插件。
 - Sätteri peer 范围更新为 `>=0.10.5 <0.11.0`。此工作区原本已经使用 0.10.5，本次固定已测试版本并修正兼容范围。
 
-已知上游限制：Merman 0.7.0 可能把流程图文字标签中的小于号重复转义，显示成 `&lt;` 文本；测试中有对应 TODO。类似 HTML 标签的内容也会受上游标签处理规则影响，即使使用原生 SVG 文字输出。本包不承诺完整语法覆盖、固定渲染耗时、与 Mermaid.js 像素级一致或保证搜索引擎收录。
+已知上游限制：Merman 0.10.0 可能把流程图文字标签中的小于号重复转义，显示成 `&lt;` 文本；测试中有对应 TODO。类似 HTML 标签的内容也会受上游标签处理规则影响，即使使用原生 SVG 文字输出。本包不承诺完整语法覆盖、固定渲染耗时、与 Mermaid.js 像素级一致或保证搜索引擎收录。
 
 在示例项目中直接预览本地包效果：
 
@@ -92,7 +92,7 @@ console.log(supportedDiagrams());
 bun run preview
 ```
 
-命令会构建本地包及静态示例，再启动 Astro preview（通常为 `http://127.0.0.1:4321/`）。页面展示 18 类图表与 11 个主题，直接使用包生成 SVG 自带的 Mermaid 样式。前台服务保持进程运行，Ctrl+C 停止；后台服务使用 `bun run preview:stop` 停止。`bun run dev` 启动示例开发服务器。
+命令会构建本地包及静态示例，再启动 Astro preview（通常为 `http://127.0.0.1:4321/`）。页面展示 37 个 Merman 图表标识与 11 个主题，直接使用包生成 SVG 自带的 Mermaid 样式。前台服务保持进程运行，Ctrl+C 停止；后台服务使用 `bun run preview:stop` 停止。`bun run dev` 启动示例开发服务器。
 
 从源码构建需要 **Rust 1.95 或更新版本**、Node.js 22.14+ 与 Bun：
 
@@ -108,13 +108,13 @@ cargo clippy --locked -- -D warnings
 bun run build
 ```
 
-提交 `Cargo.lock` 与 `bun.lock`，原生构建使用 `--locked`。当前测试集为 **85 项通过、1 项上游问题 TODO**，已在 Linux x64、Node 22.14.0 与 24.21.0 下使用 release 产物验证。测试覆盖 18 类图表的实际渲染、XML 合法性、有限数值、11 个主题、配置的可观察效果、ID 隔离、错误策略、Markdown/MDX 编译、自适应模式内部图形尺寸，以及独立 Node 进程中的包入口。这是代表性覆盖，不是完整的上游一致性测试。CI 配置覆盖四种发布平台及最低 Node 版本，发布任务会先测试原生 release 产物。
+提交 `Cargo.lock` 与 `bun.lock`，原生构建使用 `--locked`。当前测试集为 **123 项通过、1 项上游问题 TODO**，已在 Linux x64、Node 22.14.0 与 24.21.0 下使用 release 产物验证。测试覆盖 37 个 Merman 图表标识的实际渲染、XML 合法性、有限数值、11 个主题、配置的可观察效果、ID 隔离、错误策略、Markdown/MDX 编译、自适应模式内部图形尺寸，以及独立 Node 进程中的包入口。这是代表性覆盖，不是完整的上游一致性测试。CI 配置覆盖四种发布平台及最低 Node 版本，发布任务会先测试原生 release 产物。
 
 本项目使用 MIT 许可证。Merman 是独立依赖，许可证为 MIT OR Apache-2.0。上游行为和许可证请参见 [Merman 源码](https://github.com/Latias94/merman)及 [Sätteri 源码](https://github.com/bruits/satteri)。
 
 项目 [LICENSE](./LICENSE) 保持 MIT，版权署名为 Copyright (c) 2026 王兴家。Merman 的 MIT 声明另存于 [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md)，并随 npm 包分发。
 
-0.8.1 包含一个针对 Merman 0.7.0 的中文 ER 图解析修复：PK/FK/UK 检查不再切断 UTF-8 字符。修补来源和范围见 `vendor/README.md`。Rust panic 会转换为渲染错误，避免越过 N-API 边界；默认仍会阻止构建。
+Merman 0.10.0 已包含上游 UTF-8 ER 词法修复。Rust panic 会在 N-API 边界转换为渲染错误；默认错误策略仍会阻止构建。
 
 ## Runtime-focused native release builds
 
