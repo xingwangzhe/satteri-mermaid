@@ -23,6 +23,13 @@ Thumbs.db
 *.tgz
 .cargo/
 
+# Generated benchmark reports and LLVM profiles
+/reports/
+/benchmark/reports/
+/benchmark-results/
+*.profraw
+*.profdata
+
 # Astro / test / tool caches
 .astro/
 .vite/
