@@ -31,6 +31,20 @@ pub fn supported_diagrams() -> Vec<String> {
     .collect()
 }
 
+#[cfg(feature = "pgo")]
+#[napi]
+pub fn flush_pgo_profile() -> napi::Result<()> {
+  unsafe extern "C" {
+    fn __llvm_profile_write_file() -> i32;
+  }
+  let status = unsafe { __llvm_profile_write_file() };
+  if status == 0 {
+    Ok(())
+  } else {
+    Err(napi::Error::from_reason("LLVM profile flush failed"))
+  }
+}
+
 /// Synchronous SVG rendering via the published Merman Rust facade.
 #[napi]
 pub fn render(code: String, opts: Option<RenderOptions>) -> napi::Result<String> {

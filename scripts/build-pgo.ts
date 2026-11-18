@@ -104,6 +104,7 @@ const build = (stage, flag) => {
     copyFileSync(join(env.CARGO_TARGET_DIR, target, "release", `lib${libName}.so`), binary);
   } else {
     const napiArgs = ["x", "napi", "build", "--platform", "--release", "--target", target];
+    if (stage === "instrumented") napiArgs.push("--features", "pgo");
     if (pkg.napi.binaryName === "mermaid-rs") napiArgs.push("--no-js");
     run("bun", [...napiArgs, ...args, "--", "--locked"], env);
   }

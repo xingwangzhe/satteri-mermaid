@@ -85,4 +85,5 @@ for (const [name, code] of Object.entries(diagrams)) {
   }
 }
 if (!Number.isFinite(sink)) throw new Error("Non-finite workload output");
+if (training) native.flushPgoProfile();
 console.log(JSON.stringify(results));

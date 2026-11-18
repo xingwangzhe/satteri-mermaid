@@ -9,6 +9,9 @@ version = "0.8.4"
 [lib]
 crate-type = ["cdylib"]
 
+[features]
+pgo = []
+
 [dependencies]
 napi-derive = "3.7.1"
 merman = { version = "=0.10.0", default-features = false, features = [
